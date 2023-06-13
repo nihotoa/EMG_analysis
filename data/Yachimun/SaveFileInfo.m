@@ -11,9 +11,11 @@ post : SAVE4NMF
 %}
 
 %% set param
-monkeyname = 'F' ;
-taskname = 'standard';
-save_fold = 'easyData';
+monkeyname = 'F' ; %initial string of measurement file
+taskname = 'standard'; %you don't need to change
+save_fold = 'easyData'; %you don't need to change
+
+%% code section
 file_list = dir([monkeyname '*.mat']);
 pat = digitsPattern;
 for ii = 1:length(file_list)
@@ -23,7 +25,6 @@ end
 tarsessions = unique(tarsessions);
 %tarfiles = {2 4};
 
-%% code section
 for tarN = 1:length(tarsessions)
     fileInfo.monkeyname = monkeyname;
     fileInfo.xpdate = tarsessions(tarN);

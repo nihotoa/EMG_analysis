@@ -1,14 +1,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % coded by Naoki Uchida
 % last modification : 2021.03.23
-%{
-筋電データのフィルタリングとリサンプリング,タスクごとのトリミングと時間正規化
-指定した割合での、各タイミング付近のデータのトリミング、クロストークの計算など多くの解析をしている関数
-この関数によってほぞんされるデータファイルは多くあるが、特に重要なのはeasyData→P_Dataの中に保存されているもの
-%}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear 
-%% RUNNING DATA LIST
+%% set param
 % which save pttern?
 saveP = 1;
 saveE = 1;
@@ -21,11 +16,13 @@ realname = 'Yachimun';
 % realname = 'SesekiR';
 % realname = 'Matatabi';
 
+
+%% code section
 % get target files(select standard.mat files which contain file information, e.g. file numbers)
 global task;
 task = 'standard';
 save_fold = 'easyData';
-disp('【get target files(select standard.mat files which contain file information, e.g. file numbers)】')
+disp('【get target files(select ~_standard.mat (location: monkey_name -> easyData ->) which contain file information, e.g. file numbers)】')
 [Allfiles_S,path] = uigetfile('*.mat',...
                      'Select One or More Files', ...
                      'MultiSelect', 'on');
@@ -65,6 +62,9 @@ for i = 1:S(2)
     alignedData_trial.tData4 = Res.tData4;
     alignedData_trial.tDataTask = Res.tDataTask;
 %%
+    if not(exist([realname '/easyData/P-DATA']))
+        mkdir([realname '/easyData/P-DATA'])
+    end
     cd([realname '/easyData/P-DATA'])
     if saveP == 1
         save([monkeyname sprintf('%d',xpdate) '_Pdata.mat'], 'monkeyname', 'xpdate', 'file_num','EMGs','ECoGs',...
