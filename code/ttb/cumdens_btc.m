@@ -1,0 +1,196 @@
+function cumdens_btc(Outputdir)
+% trace2wcoh_btc(Outputdir)
+% ex.
+% cumdens_btc('L:\tkitom\data\cumdens\071210');
+
+warning('off');
+if nargin<1
+    disp('Outputdir must be specified. ex cumdens_btc(''L:\tkitom\data\cumdens\071210'')');
+    return;
+end
+
+
+% --------------------------
+% Set parameters
+% % 
+% ExpSets	={{'AobaT00101'},...
+%     {'AobaT00201','AobaT00202'},...
+%     {'AobaT00203'},...
+%     {'AobaT00301'},...
+%     {'AobaT00302','AobaT00306'},...
+%     {'AobaT00903','AobaT00914'},...
+%     {'AobaT00907'},...
+%     {'AobaT01101'},...
+%     {'AobaT01105','AobaT01106'},...
+%     {'AobaT01108','AobaT01112'},...
+%     {'AobaT01114','AobaT01114'},...
+%     {'AobaT01702','AobaT01710'},...
+%     {'AobaT02401','AobaT02402'},...
+%     {'AobaT02403'},...
+%     {'AobaT02405','AobaT02407'}};
+
+% ExpSets	={{'T01303','T01304','T01305'},...
+%     {'T01307','T01310'},...
+%     {'T01308','T01309'},...
+%     {'T02101','T02102','T02103'},...
+%     {'T02104','T02105','T02111'},...
+%     {'T02106','T02107'},...
+%     {'T02108','T02109','T02110'}};
+ExpSets	={{'AobaT00101'}};
+
+% ExpSets	={{'AobaT00101'},...
+%     {'AobaT00201','AobaT00202'},...
+%     {'AobaT00203'},...
+%     {'AobaT00301'},...
+%     {'AobaT00302','AobaT00306'},...
+%     {'AobaT00903','AobaT00914'},...
+%     {'AobaT00907'},...
+%     {'AobaT01101'},...
+%     {'AobaT01105','AobaT01106'},...
+%     {'AobaT01108','AobaT01112'},...
+%     {'AobaT01114','AobaT01114'},...
+%     {'AobaT01702','AobaT01710'},...
+%     {'AobaT02401','AobaT02402'},...
+%     {'AobaT02403'},...
+%     {'AobaT02405','AobaT02407'},...
+%     {'T01303','T01304','T01305'},...
+%     {'T01307','T01310'},...
+%     {'T01308','T01309'},...
+%     {'T02101','T02102','T02103'},...
+%     {'T02104','T02105','T02111'},...
+%     {'T02106','T02107'},...
+%     {'T02108','T02109','T02110'}};
+
+Trigfile    = 'Grip Offset (success valid)';
+
+Reffile     = 'Non-filtered-subsample-5000Hz(uV)';
+
+Original_Tarfiles	= {'Non-filtered-subsample-5000Hz(uV)'};
+
+% Original_Tarfiles	= {'AbDM-rect(uV)',...
+%     'AbPB-rect(uV)',...
+%     'ADP-rect(uV)',...
+%     'BB-rect(uV)',...
+%     'BRD-rect(uV)',...
+%     'ECRb-rect(uV)',...
+%     'ECRl-rect(uV)',...
+%     'ECU-rect(uV)',...
+%     'ED23-rect(uV)',...
+%     'ED45-rect(uV)',...
+%     'EDC-rect(uV)',...
+%     'FCR-rect(uV)',...
+%     'FCU-rect(uV)',...   
+%     'FDI-rect(uV)',...
+%     'FDPr-rect(uV)',...
+%     'FDPu-rect(uV)',...
+%     'FDS-rect(uV)',...
+%     'PL-rect(uV)',...
+%     'PT-rect(uV)'};
+
+
+Sourcedir   = 'L:\tkitom\MDAdata\mat';
+
+nfft    = 2560;
+% filt    = [];                                           % filterなし
+filt    = zeros(1,nfft/2-1); filt([4:29,35:50])  = 1;   % filter　5-55、65-95
+
+IndWindow   = [0,nfft-1;nfft,2*nfft-1];
+
+% --------------------------
+
+Tarfiles    = uiselect(Original_Tarfiles,1,'対象となるファイルを選択してください。');
+uiwait(msgbox(Tarfiles,'確認','modal'));
+
+
+mkdir(Outputdir);
+nExpSet	= length(ExpSets);
+
+for ii=1:nExpSet
+    try
+    indicator(ii,nExpSet)
+    currExpSet  = ExpSets{ii};
+    firstExp	= currExpSet{1};
+    nExp        = length(currExpSet);
+    
+    disp([num2str(ii),'/',num2str(nExpSet),' == ',firstExp])
+    
+    nTarget	= length(Tarfiles);
+
+    if(nTarget < 1)
+        continue;
+    end
+    
+    for jj=1:nExp
+        Trig    = load(fullfile(Sourcedir,currExpSet{jj},[Trigfile,'.mat']));
+        Ref     = load(fullfile(Sourcedir,currExpSet{jj},[Reffile,'.mat']));
+        Ref     = getdata(Ref,Trig,IndWindow);
+        
+        if(jj==1)
+            RefData	= Ref.Data;
+            RefName = Reffile;
+            samp_rate1   = Ref.samp_rate;
+        else
+            RefData	= [RefData;Ref.Data];
+        end
+    end
+    [seg_tot1,seg_size1]    = size(RefData);
+    clear('Trig','Ref');pack;
+    
+    
+    
+    for kk =1:nTarget
+        Tarfile = Tarfiles{kk};
+        for jj=1:nExp
+            Trig    = load(fullfile(Sourcedir,currExpSet{jj},[Trigfile,'.mat']));
+            Tar     = load(fullfile(Sourcedir,currExpSet{jj},[Tarfile,'.mat']));
+            Tar     = getdata(Tar,Trig,IndWindow);
+            
+            if(jj==1)
+                TarData	= Tar.Data;
+                TarName = Tarfile;
+                samp_rate2   = Tar.samp_rate;
+            else
+                TarData	= [TarData;Tar.Data];
+            end
+        end
+        [seg_tot2,seg_size2]    = size(TarData);
+        clear('Trig','Tar');pack;
+        
+        if(seg_tot1~=seg_tot2)
+            error('RefとTarのseg_totサイズが一致しません。')
+        else
+            seg_tot	= seg_tot1;
+            seg_size= seg_size1;
+        end
+        
+        if(samp_rate1~=samp_rate2)
+            error('RefとTarのsamp_rateが一致しません。')
+        else
+            samp_rate	= samp_rate1;
+        end
+        
+        Outputfile  = (fullfile(Outputdir,[firstExp,'_',Trigfile,'_',RefName,'_',TarName,'.mat']));
+
+        [f11,f22,f21,freq]  = xspec(RefData,TarData,nfft,samp_rate);
+        [q11,q22,q21,t,c95]  = cumdens(f11,f22,f21,nfft,samp_rate,seg_size,seg_tot,filt);
+        
+        cl.nfft         = nfft;
+        cl.seg_size     = seg_size;
+        cl.seg_tot      = seg_tot;
+        cl.samp_rate    = samp_rate;
+        cl.c95          = c95;
+        ver             = 071210;
+        
+        save(Outputfile,'f11','f22','f21','q11','q22','q21','cl','freq','t','ver');
+
+        disp(['   ',num2str(kk),'/',num2str(nTarget),' -> ',Outputfile])
+    end
+    catch
+        currExpSet  = ExpSets{ii};
+        firstExp	= currExpSet{1};
+        disp(['*** Error occured in ',firstExp])
+    end
+        
+end
+indicator(0,0)
+warning('on')

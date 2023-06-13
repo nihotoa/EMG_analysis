@@ -1,0 +1,31 @@
+function y = FourierShift2D(x, delta)
+%
+% y = FourierShift(x, [delta_x delta_y])
+%
+% Shifts x by delta cyclically. Uses the fourier shift theorem.
+%
+% Real inputs should give real outputs.
+%
+% By Tim Hutt, 26/03/2009
+
+% The size of the matrix.
+[N, M] = size(x);
+
+% FFT of our possibly padded input signal.
+X = fft2(x);
+
+% The mathsy bit. The floors take care of odd-length signals.
+x_shift = exp(-i * 2 * pi * delta(1) * [0:floor(N/2)-1 floor(-N/2):-1]' / N);
+y_shift = exp(-i * 2 * pi * delta(2) * [0:floor(M/2)-1 floor(-M/2):-1] / M);
+Y = X .* (x_shift * y_shift);
+
+% Invert the FFT.
+y = ifft2(Y);
+
+% There should be no imaginary component (for real input
+% signals) but due to numerical effects some remnants remain.
+if isreal(x)
+    y = real(y);
+end
+
+end

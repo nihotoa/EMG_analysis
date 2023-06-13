@@ -1,0 +1,10 @@
+function SelectedArea   = uirect
+k = waitforbuttonpress;
+point1 = get(gca,'CurrentPoint');    % ボタンダウンの検出
+finalRect = rbbox;                   % figure単位の出力
+point2 = get(gca,'CurrentPoint');    % ボタンアップの検出
+point1 = point1(1,1:2);              % x と y の抽出
+point2 = point2(1,1:2);
+p1 = min(point1,point2);             % 位置と大きさの計算
+offset = abs(point1-point2);         % 
+SelectedArea    =   [p1(1),p1(2),offset(1),offset(2)];

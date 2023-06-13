@@ -1,0 +1,2 @@
+function s =normEMGMAX(s)
+

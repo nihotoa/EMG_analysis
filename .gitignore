@@ -4,6 +4,4 @@
 #ただし，以下だけは除く
 !*.m
 !*.gitignore
-!code/
-!data/
-!Nibali/
+!*/

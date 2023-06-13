@@ -1,0 +1,3 @@
+function uideletetimestamp
+
+h   = gco;
