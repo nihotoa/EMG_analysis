@@ -15,6 +15,7 @@ saveE_filt = 1;
 realname = 'Yachimun';
 % realname = 'SesekiR';
 % realname = 'Matatabi';
+% realname = 'Nibali';
 
 
 %% code section
@@ -99,9 +100,25 @@ for i = 1:S(2)
                                                );
     end
     cd ../../../
-   catch
+   catch exception
       cd(path)
       cd ../../
       disp(['****** Error occured in ',Allfiles_S{i}]) ; 
+      print_error_message(exception)
    end
+end
+
+%% define local functon
+function [] = print_error_message(exception)
+disp(['error message: ', exception.message]);
+string_cell = cell(length(exception.stack),1);
+count = 1;
+for ii = length(exception.stack):-1:1
+    elements = exception.stack(ii);
+    string_cell{count} = [elements.name '.m line ' num2str(elements.line)];
+    count = count + 1;
+end
+delimiter = ' -> ';
+result = strjoin(string_cell, delimiter);
+disp(['Error location : ' result]);
 end

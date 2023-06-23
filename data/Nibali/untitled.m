@@ -48,8 +48,8 @@ filt_h = 50;%カットオフ周波数の値
 filter = 1; %フィルターをかけるかどうか
 filter_h = 50; %筋シナジー用のハイパスフィルターのカットオフ周波数(筋電解析のためのハイパスカットオフ周波数filt_hと混合しないように注意する)
 filter_l = 500; %筋シナジー用のローパスフィルターのカットオフ周波数
-after_rect_filter = 10;%整流(rect)後の平滑化のためのローパスフィルターのカットオフ周波数
-y_max = 10;
+after_rect_filter = 20;%整流(rect)後の平滑化のためのローパスフィルターのカットオフ周波数
+% y_max = 10;
 % around timing1
 pre_frame1 = 400;
 post_frame1 = 200;
@@ -66,25 +66,32 @@ post_frame3 = 100;
 pre_frame4 = 300;
 post_frame4 = 400;
 
-selEMGs= 1:16;%24] ; % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
-EMGs=cell(16,1) ;
-EMGs{1,1}= 'EDC-A';
-EMGs{2,1}= 'EDC-B';
-EMGs{3,1}= 'ED23';
-EMGs{4,1}= 'ED45';
-EMGs{5,1}= 'ECR';
-EMGs{6,1}= 'ECU';
-EMGs{7,1}= 'BRD';
-EMGs{8,1}= 'EPL-B';
-EMGs{9,1}= 'FDS-A';
-EMGs{10,1}= 'FDS-B';
-EMGs{11,1}= 'FDP';
-EMGs{12,1}= 'FCR';
-EMGs{13,1}= 'FCU';
-EMGs{14,1}= 'FPL';
-EMGs{15,1}= 'Biceps';
-EMGs{16,1}= 'Triceps';
-EMG_num = 16;
+% selEMGs= 1:16;%24] ; % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
+% EMGs=cell(16,1) ;
+% EMGs{1,1}= 'EDC-A';
+% EMGs{2,1}= 'EDC-B';
+% EMGs{3,1}= 'ED23';
+% EMGs{4,1}= 'ED45';
+% EMGs{5,1}= 'ECR';
+% EMGs{6,1}= 'ECU';
+% EMGs{7,1}= 'BRD';
+% EMGs{8,1}= 'EPL-B';
+% EMGs{9,1}= 'FDS-A';
+% EMGs{10,1}= 'FDS-B';
+% EMGs{11,1}= 'FDP';
+% EMGs{12,1}= 'FCR';
+% EMGs{13,1}= 'FCU';
+% EMGs{14,1}= 'FPL';
+% EMGs{15,1}= 'Biceps';
+% EMGs{16,1}= 'Triceps';
+% EMG_num = 16;
+
+selEMGs= 1:3;%24] ; % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
+EMGs=cell(3,1) ;
+EMGs{1,1}= 'FDS';
+EMGs{2,1}= 'PL';
+EMGs{3,1}= 'EPL';
+EMG_num = 3;
 %% make timing data
 cd(num2str(exp_day))
 load(['AllData_' monkeyname exp_day '.mat'],'CAI*','CTTL*','CEMG*','TimeRange')
@@ -140,7 +147,7 @@ all_timing = sort_timing(all_timing,1);
 
 %timingデータの保存場所の作成
 Data_save_dir = 'EMG_Data/Data';
-if not(exist(Data_save_dir))
+if not(isfolder(Data_save_dir))
     mkdir(Data_save_dir)
 end
 %success_timingの作成
@@ -234,9 +241,11 @@ if high_pass == 1
     end
 elseif filter == 1
     for ii = 1 : EMG_num
+        %offset
+        temp_EMG = eval(['CEMG_' sprintf('%03d',ii)]);
+        temp_EMG = offset(temp_EMG, 'mean');
         %high_pass
         [B,A] = butter(6, (filter_h .* 2) ./ SR, 'high');
-        temp_EMG = eval(['CEMG_' sprintf('%03d',ii)]);
         temp_EMG = filtfilt(B,A,temp_EMG);
         eval(['CEMG_' sprintf('%03d',ii) ' = temp_EMG;'])
         %rect
@@ -282,18 +291,15 @@ for ii=1:EMG_num
     end
     save([Data_save_dir '/' 'task_normalized_hist.mat'], "tim_hist")
     task_EMG = cell2mat(task_EMG_sel);
-    ave_task_EMG = median(task_EMG);
-    subplot(4,4,ii)
-    for kk = 1:length(task_EMG_sel) %kk:筋肉の数
+    ave_task_EMG = mean(task_EMG);
+    subplot(4,ceil(EMG_num/4), ii)
+    for kk = 1:length(task_EMG_sel) %kk:trial_num
         plot(task_EMG(kk,:));
         hold on;
         if filter == 1
             if kk == 1 
-                yMax = max(task_EMG(kk,:));
-                ylim([0 yMax+10]);
-            elseif max(task_EMG(kk,:)) > yMax
-                yMax = max(task_EMG(kk,:));
-                ylim([0 yMax+10]);
+                yMax = quantile(max(task_EMG,[], 2), 0.75);
+                ylim([0 ceil(ceil(yMax)/10)*10+10]);
             end
         else
             if kk == 1 
@@ -339,7 +345,7 @@ for ii=1:EMG_num
 end
 
 Picture_save_dir = 'EMG_Data/picture';
-if not(exist(Picture_save_dir))
+if not(isfolder(Picture_save_dir))
     mkdir(Picture_save_dir)
 end
 
@@ -358,7 +364,7 @@ All_ave_task_EMG = cell2mat(All_ave_task_EMG);
 figure('Position',[100,100,800,1200]);
 
 for ll = 1:EMG_num
-    subplot(4,4,ll)
+    subplot(4,ceil(EMG_num/4), ll)
     plot(All_ave_task_EMG(ll,:))
 %     ylim([0 ceil(max(All_ave_task_EMG(ll,:)))])
     if exist('y_max')
@@ -411,7 +417,7 @@ else
     h = figure();
     h.WindowState = 'maximized';
     for ii = 1:EMG_num
-        subplot(4,4,ii)
+        subplot(4,ceil(EMG_num/4), ii)
         for jj = 1:length(success_timing)
             hold on;
             plot(eval(['task_tim1_EMG_' sprintf('%03d',ii) '(jj,:)']))
@@ -455,7 +461,7 @@ else
     h = figure();
     h.WindowState = 'maximized';
     for ii = 1:EMG_num
-        subplot(4,4,ii)
+        subplot(4,ceil(EMG_num/4), ii)
         for jj = 1:length(success_timing)
             hold on;
             task_trim_tim2 = eval(['task_tim2_EMG_' sprintf('%03d',ii) '{jj,1}((timing1_2_maxframe-pre_frame2)+1 : (timing1_2_maxframe + post_frame2));']);
@@ -506,7 +512,7 @@ else
     h = figure();
     h.WindowState = 'maximized';
     for ii = 1:EMG_num
-        subplot(4,4,ii)
+        subplot(4,ceil(EMG_num/4), ii)
         for jj = 1:length(success_timing)
             hold on;
             task_trim_tim3 = eval(['task_tim3_EMG_' sprintf('%03d',ii) '{jj,1}((timing1_3_maxframe-pre_frame3)+1 : (timing1_3_maxframe + post_frame3));']);
@@ -548,7 +554,7 @@ else
     h = figure();
     h.WindowState = 'maximized';
     for ii = 1:EMG_num
-        subplot(4,4,ii)
+        subplot(4,ceil(EMG_num/4), ii)
         for jj = 1:length(success_timing)
             hold on;
             plot(eval(['task_tim4_EMG_' sprintf('%03d',ii) '(jj,:)']))
@@ -606,7 +612,7 @@ end
 %% compile EMG to use synergy analysis (筋シナジー用のフィルタリング済みの筋電をNMF_RESULTにMATファイルとして保存するためのセクション)
 if filter == 1
     nmf_save_fold = [save_NMF_fold '/' monkeyname num2str(exp_day) '_standard'];
-    if not(exist(nmf_save_fold))
+    if not(isfolder(nmf_save_fold))
         mkdir(nmf_save_fold);
     end
 
@@ -629,7 +635,7 @@ if filter == 1
     h = figure();
     h.WindowState = 'maximized';
     for ii = 1:EMG_num
-       subplot(4,4,ii)
+       subplot(4,ceil(EMG_num/4), ii)
        hold on
        [trial_num,~] = size(stack_EMG{ii,1}); %ノイズタスク除去後のタスク数
        for jj = 1:trial_num
@@ -653,7 +659,7 @@ if filter == 1
 %     h = figure();
     figure('Position',[100,100,800,1200]);
     for ii = 1:EMG_num
-       subplot(4,4,ii)
+       subplot(4,ceil(EMG_num/4), ii)
        hold on
        plot(all_temp_EMG{ii,1},'LineWidth',2)
        ylim([0 2])
@@ -714,7 +720,7 @@ if filter == 1
         h = figure();
         h.WindowState = 'maximized';
         for ii = 1:EMG_num
-           subplot(4,4,ii)
+           subplot(4,ceil(EMG_num/4), ii)
            hold on
            [trial_num,~] = size(stack_EMG{ii,1}); %ノイズタスク除去後のタスク数
            for jj = 1:trial_num
@@ -732,7 +738,7 @@ if filter == 1
         h = figure();
         h.WindowState = 'maximized';
         for ii = 1:EMG_num
-           subplot(4,4,ii)
+           subplot(4,ceil(EMG_num/4), ii)
            hold on
            plot(all_temp_EMG{ii,1})
            title([EMGs{ii,1} '(uV)'])
@@ -785,7 +791,7 @@ if filter == 1
         h = figure();
         h.WindowState = 'maximized';
         for ii = 1:EMG_num
-           subplot(4,4,ii)
+           subplot(4,ceil(EMG_num/4), ii)
            hold on
            [trial_num,~] = size(stack_EMG{ii,1}); %ノイズタスク除去後のタスク数
            for jj = 1:trial_num
@@ -803,7 +809,7 @@ if filter == 1
         h = figure();
         h.WindowState = 'maximized';
         for ii = 1:EMG_num
-           subplot(4,4,ii)
+           subplot(4,ceil(EMG_num/4), ii)
            hold on
            plot(all_temp_EMG{ii,1})
            title([EMGs{ii,1} '(uV)'])
@@ -854,7 +860,7 @@ if filter == 1
         h = figure();
         h.WindowState = 'maximized';
         for ii = 1:EMG_num
-           subplot(4,4,ii)
+           subplot(4,ceil(EMG_num/4), ii)
            hold on
            [trial_num,~] = size(stack_EMG{ii,1}); %ノイズタスク除去後のタスク数
            for jj = 1:trial_num
@@ -872,7 +878,7 @@ if filter == 1
         h = figure();
         h.WindowState = 'maximized';
         for ii = 1:EMG_num
-           subplot(4,4,ii)
+           subplot(4,ceil(EMG_num/4), ii)
            hold on
            plot(all_temp_EMG{ii,1})
            ylim([0 2]);
@@ -923,7 +929,7 @@ if filter == 1
         h = figure();
         h.WindowState = 'maximized';
         for ii = 1:EMG_num
-           subplot(4,4,ii)
+           subplot(4,ceil(EMG_num/4), ii)
            hold on
            [trial_num,~] = size(stack_EMG{ii,1}); %ノイズタスク除去後のタスク数
            for jj = 1:trial_num
@@ -941,7 +947,7 @@ if filter == 1
         h = figure();
         h.WindowState = 'maximized';
         for ii = 1:EMG_num
-           subplot(4,4,ii)
+           subplot(4,ceil(EMG_num/4), ii)
            hold on
            plot(all_temp_EMG{ii,1})
            title([EMGs{ii,1} '(uV)'])

@@ -1,5 +1,4 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %{
 Coded by: Naohito Ohta
 last modification : 2022.12.14
@@ -16,16 +15,24 @@ if you conduct ' Copy_of_sample_data_walkthrough.m', please remove the path of '
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% set param
-exp_days = [20230525];
-conduct_Copy_of = 0;
-conduct_CombineMatfile = 0;
+exp_days = [20230613];
+conduct_Copy_of = 1;
+EMG_recording_type = 'AlphaOmega'; %which device you used to record EMG ('Ripple'/'AlphaOmega')
+conduct_CombineMatfile = 1;
 process_type = 'normal'; % 'normal' / 'task_define' (基本normal, 新しいタスクの探索のために，タスク定義を従来のものと変更する必要があったので，task_defineを作った)
 conduct_untitled = 1;
 %% code section
 % conduct Copy_of_sample_data_walkthrough.m with using 'exp_days'
 if conduct_Copy_of
-    for exp_day = exp_days
-        Copy_of_sample_data_walkthrough(exp_day);
+    switch EMG_recording_type
+        case 'Ripple'
+            for exp_day = exp_days
+                Copy_of_sample_data_walkthrough(exp_day);
+            end
+        case 'AlphaOmega'
+            for exp_day = exp_days
+                MakeAlphaOmegaEMG(exp_day)        
+            end
     end
 end
 
