@@ -27,7 +27,7 @@ line_width = 1.7;
 unique_string = '-hp50Hz-rect-lp5Hz-ds100Hz'; %uniqueな文字列
 
 %もらったcsvファイルを参照してEMGsを作ること(順番も大事)，
-% % %pre1の時
+%pre1の時
 % EMGs=cell(14,1) ;
 % EMGs{1,1}= 'IOD-1';
 % EMGs{2,1}= 'APB';
@@ -44,27 +44,8 @@ unique_string = '-hp50Hz-rect-lp5Hz-ds100Hz'; %uniqueな文字列
 % EMGs{13,1}= '4L';
 % EMGs{14,1}= 'Triceps';
 
-%post1の時
-% EMGs=cell(16,1) ;
-% EMGs{1,1}= 'IOD-1';
-% EMGs{2,1}= '2L';
-% EMGs{3,1}= '3L';
-% EMGs{4,1}= '4L';
-% EMGs{5,1}= 'APB';
-% EMGs{6,1}= 'ADQ';
-% EMGs{7,1}= 'EDC';
-% EMGs{8,1}= 'ECR';
-% EMGs{9,1}= 'BRD';
-% EMGs{10,1}= 'FCU';
-% EMGs{11,1}= 'FCR';
-% EMGs{12,1}= 'FDS';
-% EMGs{13,1}= 'Biceps';
-% EMGs{14,1}= 'Triceps';
-% EMGs{15,1}= 'DLA';
-% EMGs{16,1}= 'DLM';
-
-% post2の時
-EMGs=cell(14,1) ;
+%post1, post2の時
+EMGs=cell(16,1) ;
 EMGs{1,1}= 'IOD-1';
 EMGs{2,1}= '2L';
 EMGs{3,1}= '3L';
@@ -79,6 +60,9 @@ EMGs{11,1}= 'FCR';
 EMGs{12,1}= 'FDS';
 EMGs{13,1}= 'Biceps';
 EMGs{14,1}= 'Triceps';
+EMGs{15,1}= 'DLA';
+EMGs{16,1}= 'DLM';
+
 %% code section
 use_electrode_num = [1:length(EMGs)];
 disp('【please select Task~.mat file(patient -> day ->)】')
@@ -97,9 +81,15 @@ for ii = 1:length(RawEMG_fileNames) %タスクの種類???数
     %EMGデータをoffsetする
     EMG_data = offset(EMG_data, 'mean');
     if fix_lim
-        raw_max = abs_roundup(max(reshape(EMG_data,1,[])));
-        raw_min = abs_roundup(min(reshape(EMG_data,1,[])));
-        cri_value = min(raw_max,abs(raw_min));
+%         raw_max = abs_roundup(max(reshape(EMG_data,1,[])));
+%         raw_min = abs_roundup(min(reshape(EMG_data,1,[])));
+%         cri_value = min(raw_max,abs(raw_clmin));
+        if length(EMGs) == 14 %post1の時
+            load([pwd '/' patient_name '/' 'yMax_Data.mat'], 'yMax_list', 'electrode_matrix')
+            yMax_list = yMax_list(electrode_matrix);
+        else
+            load([pwd '/' patient_name '/' 'yMax_Data.mat'], 'yMax_list')
+        end
         flag_name = '_aligned_Amp'; %ファイル名に含める 
     else
         flag_name = '';
@@ -167,7 +157,7 @@ for ii = 1:length(RawEMG_fileNames) %タスクの種類???数
             %decorate
             if fix_lim
                 if plot_RAW
-                    ylim([-1*cri_value cri_value])
+                    ylim([-1*yMax_list(selected_electrode) yMax_list(selected_electrode)])
                 else
                     %まだできていない
                 end
@@ -225,7 +215,7 @@ end
 
 %% set function
 function return_value = abs_roundup(input_num)
-% 入力した数値の絶対値をを，初めて出てきた桁の下の桁で繰り上がりするための関数
+% 入力した数値の絶対値を，初めて出てきた桁の下の桁で繰り上がりするための関数
 if input_num < 0
     input_num = abs(input_num);
     flag = 1; %マイナス値かどうかの判断

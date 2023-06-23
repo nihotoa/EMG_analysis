@@ -22,7 +22,7 @@ switch monkeyname
     case 'Ya'
         real_name = 'Yachimun';
     case 'F'
-        real_name = 'Yachimun';
+        real_name = 'Nibali';
     case 'Ma'
         real_name = 'Matatabi';
     case 'Sa'
@@ -40,7 +40,9 @@ end
 xpdate = sprintf('%d',xpdate_num);
 cd(real_name)
 cd(save_fold)
-mkdir([monkeyname xpdate '_' task]);
+if not(exist([monkeyname xpdate '_' task]))
+    mkdir([monkeyname xpdate '_' task]);
+end
 cd ../
 disp(['START TO MAKE & SAVE ' monkeyname xpdate 'file[' sprintf('%d',file_num(1)) ',' sprintf('%d',file_num(end)) ']']);
 %EMG set
@@ -82,21 +84,12 @@ switch monkeyname
         a = cummax(selEMGs,'reverse');
         EMG_num = a(1,1);
         make_ECoG = 0;
-    case 'F'%Yachimun
-        selEMGs=1:12;%24] ; % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
-        EMGs=cell(12,3) ;
-        EMGs{1,1}= 'FDP';
-        EMGs{2,1}= 'FDSprox';
-        EMGs{3,1}= 'FDSdist';
-        EMGs{4,1}= 'FCU';
-        EMGs{5,1}= 'PL';
-        EMGs{6,1}= 'FCR';
-        EMGs{7,1}= 'BRD';
-        EMGs{8,1}= 'ECR';
-        EMGs{9,1}= 'EDCprox';
-        EMGs{10,1}= 'EDCdist';
-        EMGs{11,1}= 'ED23';
-        EMGs{12,1}= 'ECU';
+    case 'F'%Nibali
+        selEMGs=1:3;%24] ; % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
+        EMGs=cell(3,3) ;
+        EMGs{1,1}= 'FDS';
+        EMGs{2,1}= 'PL';
+        EMGs{3,1}= 'EPL';
         a = cummax(selEMGs,'reverse');
         EMG_num = a(1,1);
         make_ECoG = 0;
@@ -231,6 +224,8 @@ if make_Timing == 1
                  end
              end
          end
+       case 'F'
+           
        otherwise %if reference monkey is not SesekiR or WasaÅAÅiif you don't have to chage to fotocellÅj
          [AllInPort,Timing,Tp,Tp3] = makeEasyTiming(monkeyname,xpdate,file_num,downdata_to,TimeRange_EMG);
          % Å´downdata_to parameter is changed 1375
@@ -308,29 +303,37 @@ Ld = length(file_num);
 a = cummax(selEMGs,'reverse');
 EMG_num = a(1,1);
 AllData_EMG_sel = cell(Ld,1);
-    
-load([monkeyname xpdate '-' sprintf('%04d',file_num(1,1))],'CEMG_001_TimeBegin');
-TimeRange = zeros(1,2);
-TimeRange(1,1) = CEMG_001_TimeBegin;
+
+try
+    load([monkeyname xpdate '-' sprintf('%04d',file_num(1,1))],'CEMG_001_TimeBegin');
+    TimeRange = zeros(1,2);
+    TimeRange(1,1) = CEMG_001_TimeBegin;
+    EMG_prefix = 'CEMG';
+catch
+    load([monkeyname xpdate '-' sprintf('%04d',file_num(1,1))],'CRAW_001_TimeBegin');
+    TimeRange = zeros(1,2);
+    TimeRange(1,1) = CRAW_001_TimeBegin;
+    EMG_prefix = 'CRAW';
+end
 get_first_data = 1;
 for i = file_num(1,1):file_num(1,Ld)
     for j = 1:length(selEMGs)
 %         S = load([monkeyname xpdate '-' sprintf('%04d',i) '.mat'],['CEMG_0' sprintf('%02d',j)]);
         if get_first_data
-            S1 = load([monkeyname xpdate '-' sprintf('%04d',i)],'CEMG_001*');
-            EMG_Hz = S1.CEMG_001_KHz .* 1000;
-            Data_num_EMG = length(S1.CEMG_001);
+            S1 = load([monkeyname xpdate '-' sprintf('%04d',i)],[EMG_prefix '_001*']);
+            EMG_Hz = eval(['S1.' EMG_prefix '_001_KHz .* 1000;']);
+            Data_num_EMG = eval(['length(S1.' EMG_prefix '_001);']);
             AllData1_EMG = zeros(Data_num_EMG, EMG_num);
-            AllData1_EMG(:,1) = S1.CEMG_001';
+            AllData1_EMG(:,1) = eval(['S1.' EMG_prefix '_001;']);
             get_first_data = 0;
         else
-            S = load([monkeyname xpdate '-' sprintf('%04d',i)],['CEMG_0' sprintf('%02d',j)]);
-            eval(['AllData1_EMG(:, j ) = S.CEMG_0' sprintf('%02d',j) ''';']);
+            S = load([monkeyname xpdate '-' sprintf('%04d',i)],[EMG_prefix '_0' sprintf('%02d',j)]);
+            eval(['AllData1_EMG(:, j ) = S.' EMG_prefix '_0' sprintf('%02d',j) ''';']);
         end
     end
     AllData_EMG_sel{1+i-file_num(1,1),1} = AllData1_EMG;
-    Se = load([monkeyname xpdate '-' sprintf('%04d',i)],'CEMG_001_TimeEnd');
-    TimeRange(1,2) = Se.CEMG_001_TimeEnd;
+    Se = load([monkeyname xpdate '-' sprintf('%04d',i)],[EMG_prefix '_001_TimeEnd']);
+    TimeRange(1,2) = eval(['Se.' EMG_prefix '_001_TimeEnd;']);
     get_first_data = 1;
 end
 AllData_EMG = cell2mat(AllData_EMG_sel);
