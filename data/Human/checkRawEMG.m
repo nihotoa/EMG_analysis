@@ -6,9 +6,11 @@ Last modification: 2023.04.05
 check function to confirm whether RAW_EMG is correct or not
 
 pre: you need to finish all procedure up to filterEMG.m and
-SuccessTiming_func.m
+SuccessTiming_func.m and getMaxY.m
 post nothing
 
+[caution!!!!]
+if you want to use  'fix_lim', please get yMax_list by conducting getMaxY.m
 【課題点】
 条件分岐が冗長すぎる(コードの書き直し)
 fix_limがfilteredの方だと対応していない
@@ -19,12 +21,12 @@ clear;
 patient_name = 'patientB';
 include_task = 1; %何個分のタスクを含めるか
 % task_length = 20; %(task_timingがなくてトリミングできない時)何秒分プロットするか(0の場合は，全てプロットする)
-merge_EMG_figure = 0; %画像をまとめて１枚として作るか，個々の筋電別に作るか
-plot_RAW = 1; %rawデータをプロットするかどうか
-plot_filtered = 0; %filterデータをplotするかどうか
+merge_EMG_figure = 1; %画像をまとめて１枚として作るか，個々の筋電別に作るか
+plot_RAW = 0; %rawデータをプロットするかどうか
+plot_filtered = 1; %filterデータをplotするかどうか
 fix_lim = 1; %Amplitudeのscaleを固定するかどうか
 line_width = 1.7;
-unique_string = '-hp50Hz-rect-lp5Hz-ds100Hz'; %uniqueな文字列
+unique_string = '-hp50Hz-rect-lp3Hz-ds100Hz'; %uniqueな文字列
 
 %もらったcsvファイルを参照してEMGsを作ること(順番も大事)，
 %pre1の時
@@ -44,7 +46,7 @@ unique_string = '-hp50Hz-rect-lp5Hz-ds100Hz'; %uniqueな文字列
 % EMGs{13,1}= '4L';
 % EMGs{14,1}= 'Triceps';
 
-%post1, post2の時
+%post1, post2,post3,post4,post4_rightの時
 EMGs=cell(16,1) ;
 EMGs{1,1}= 'IOD-1';
 EMGs{2,1}= '2L';
@@ -140,6 +142,7 @@ for ii = 1:length(RawEMG_fileNames) %タスクの種類???数
                 plot(y, filtered_data, 'LineWidth',line_width);
             end
             %decorate
+            grid on;
             title(Name)
             xlabel('Time[%]')
             ylabel('Amplitude[V]')

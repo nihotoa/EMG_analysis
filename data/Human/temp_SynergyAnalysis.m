@@ -20,7 +20,7 @@ r2_threshold = 0.8;
 trim_task = 1; %synergy_Hをトリミングするかどうか
 trim_type = 'average'; % 'average'/'stack'
 use_pc = 'mac'; % 'mac'/'windows'
-normalize_sampling = 1000; %時間正規化するときの分解能(1000だったら，1000点プロット)
+normalize_sampling = 100; %時間正規化するときの分解能(1000だったら，1000点プロット)
 % filter_l = 2;
 %% code section
 % standard.matとt_~standard.matを選択

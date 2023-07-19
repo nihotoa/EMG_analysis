@@ -16,7 +16,7 @@ end
 
 switch lower(type)
     case 'mean'
-        k   = mean(x,2);
+        k   = nanmean(x,2);
         y   = x - repmat(k,1,n);
     case 'min'
         k   = min(x,[],2); %Xの各行(各筋電)の最低値をkに代入する

@@ -1,6 +1,6 @@
 %{
 patient_name:patient_name = 'patientB' (directory name directly under 'Human' fold )
-path_elements: get with ussing next function -> split(def_pathName,
+path_elements: get with using next function -> split(def_pathName,
 filesep);※ def_pathName
 task_names:task_names = {'pre', 'post'};
 %}

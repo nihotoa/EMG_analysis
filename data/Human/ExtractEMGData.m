@@ -36,26 +36,7 @@ use_val.processing_type = 'RAW'; %筋電の前処理内容 'RAW' (現状RAWし�
 %                       'Triceps'
 %                       'FSR'
 %                                        };
-%post1の時
-% use_val.EMG_name = {
-%                       'IOD-1'
-%                       '2L'
-%                       '3L'
-%                       '4L'
-%                       'APB'
-%                       'ADQ'
-%                       'EDC'
-%                       'ECR'
-%                       'BRD'
-%                       'FCU'
-%                       'FCR'
-%                       'FDS'
-%                       'Biceps'
-%                       'Triceps'
-%                       'DLA'
-%                       'DLM'
-%                                        };
-%post2の時
+%post1, post2の時,post3,post4の時
 use_val.EMG_name = {
                       'IOD-1'
                       '2L'
@@ -71,16 +52,18 @@ use_val.EMG_name = {
                       'FDS'
                       'Biceps'
                       'Triceps'
+                      'DLA'
+                      'DLM'
                                        };
 
 %% code section
+disp('[Please select all EMG file(patinet -> day -> Task~.mat)]')
 [fileNames,use_val.pathName] = selectGUI(patient_name, 'EMG');
 
 %↓タスクの種類ごとに筋電を保存してく
 for ii = 1:length(fileNames)
     use_val.fileName = fileNames{ii};
     calcEMG(use_val);
-    
 end
 
 %% define internal function

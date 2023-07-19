@@ -2,6 +2,7 @@
 % Coded by: Naohito Ohta
 % Last modification: 2022/03/30
 % 新しいタスクの定義に使用するデータをまとめるための関数
+% CTTL_002がない場合の信号のまとめ方
 %【caustion!!!!】
 % Nibaliの実験タスクの解析には一切関係ないファイルであることに注意
 %【procedure】

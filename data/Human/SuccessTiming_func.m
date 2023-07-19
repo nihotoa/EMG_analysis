@@ -4,7 +4,7 @@ Last modification:2023.05.01
 Coded by: Naohito Ota
 【procedure】
 ・pre:ReadCsv.m
-・post:EXtractMotionData.m and temp_SynergyAnalysis.m
+・post:ExtractMotionData.m or temp_SynergyAnalysis.m or 
 【function】
 ・手動でタスクのstart,endを見つけて，それぞれのタイミング情報を.matファイルで出力
 ・タスクごとに作る必要がある
@@ -29,13 +29,23 @@ if ischar(fileNames)
 end
 for task_num = 1:length(fileNames)
     fileName = fileNames{task_num};
-    load([pathName fileName])
+    load([pathName fileName], 'data')
     for ii = 1:2 %start/end
         fig = figure('position', [100, 100, 1600, 1000]);
+        [~,col] = size(data);
+        marker_num = col/3;
+        reference_marker = 1;
+        for jj = 1:marker_num
+            if anynan(data(:,3*(reference_marker-1)+1))
+                reference_marker = reference_marker+1;
+            else
+                break
+            end
+        end
         for jj = 1:3 % x, y, z
             subplot(3,1,jj)
             hold on;
-            plot(data(:,jj))
+            plot(data(:,3*(reference_marker-1)+jj))
             hold off;
         end
         if ii == 1

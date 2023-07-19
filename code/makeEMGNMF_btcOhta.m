@@ -17,32 +17,32 @@ post: makefold.m
 normalization_methodを適宜変更しましょう
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function makeEMGNMF_btcOhta(Target_date,TimeRange,kf,nrep,nshuffle,alg)
+function makeEMGNMF_btcOhta(Target_date,referenece_type,TimeRange,kf,nrep,nshuffle,alg)
 
 % makeEMGNMF_btc(TimeRange,kf,nrep,nshuffle,alg)
 % 
 % ex
 % makeEMGNMF_btc([0 480],4,10,1,'mult')
-if nargin<2 %narginは、入力引数の数
+if nargin<3 %narginは、入力引数の数
     TimeRange   = [0 Inf];
     kf          = 1; %ここで、クロスバリデーションを行うかどうか、行う場合は何分割するかを設定できる
     nrep        = 20;
     nshuffle    = 1;
     
     alg         = 'mult';
-elseif nargin<3
+elseif nargin<4
     kf          = 4;
     nrep        = 20;
     nshuffle    = 1;
     alg         = 'mult';
-elseif nargin<4
+elseif nargin<5
     nrep        = 20;                    
     nshuffle    = 1;
     alg         = 'mult';
-elseif nargin<5
+elseif nargin<6
     nshuffle    = 1;
     alg         = 'mult';
-elseif nargin<6
+elseif nargin<7
     alg         = 'mult';
 end
 
@@ -86,7 +86,8 @@ Tarfiles    = uiselect(Tarfiles,1,'Target?');
 % Tarfiles      = Tarfiles.Tarfiles;
 % end
 
-OutputDir    = getconfig(mfilename,'OutputDir');
+%OutputDir    = getconfig(mfilename,'OutputDir');
+OutputDir = [ParentDir '/' InputDir];
 try
     if(~exist(OutputDir,'dir'))
         OutputDir    = pwd;
@@ -105,27 +106,41 @@ end
 
 try %フォルダに日付が含まれている時はtryの中身を使う
     % 文字列を分割してセル配列に格納
-    date_str = regexp(InputDirs{1}, '\d+', 'match'); % 正規表現で数字部分を抽出する
-    tokens = strsplit(InputDirs{1}, date_str);
+    switch referenece_type
+        case 'monkey'
+            date_str = regexp(InputDirs{1}, '\d+', 'match'); % 正規表現で数字部分を抽出する
+            tokens = strsplit(InputDirs{1}, date_str);
+        
+            % 分割された文字列を変数に代入
+            monkey_name = tokens{1}; %Ni
+            add_info = tokens{2}; %_standard
+        
+            for ii = 1:length(Target_date)
+                InputDirs{ii} = [monkey_name num2str(Target_date(ii)) add_info];
+            end
+        
+            nDir    = length(InputDirs);
+            nTar    = length(Tarfiles);
+        
+            date_str = regexp(ParentDir, '\d+', 'match'); % 正規表現で数字部分(20220420)を抽出する
+            tokens = strsplit(ParentDir, date_str);
+        
+            % 分割された文字列を変数に代入
+            ParentDir_factor1 = tokens{1}; %~/Nibali/
+            ParentDir_factor2 = tokens{2}; %/nmf_result
 
-    % 分割された文字列を変数に代入
-    monkey_name = tokens{1};
-    add_info = tokens{2};
+        case 'Human'
+            for ii = 1:length(Target_date)
+                InputDirs{ii} = InputDir;
+            end
 
-    for ii = 1:length(Target_date)
-        InputDirs{ii} = [monkey_name num2str(Target_date(ii)) add_info];
+            nDir    = length(InputDirs);
+            nTar    = length(Tarfiles);
+
+            tokens = strsplit(ParentDir,Target_date{1});
+            ParentDir_factor1 = tokens{1};
+            ParentDir_factor2 = tokens{2};
     end
-
-
-    nDir    = length(InputDirs);
-    nTar    = length(Tarfiles);
-
-    date_str = regexp(ParentDir, '\d+', 'match'); % 正規表現で数字部分を抽出する
-    tokens = strsplit(ParentDir, date_str);
-
-    % 分割された文字列を変数に代入
-    ParentDir_factor1 = tokens{1};
-    ParentDir_factor2 = tokens{2};
 catch
     nDir    = length(InputDirs);
     nTar    = length(Tarfiles);
@@ -135,10 +150,20 @@ end
 for iDir=1:nDir
     try
         InputDir    = InputDirs{iDir};
-        
-        disp([num2str(iDir),'/',num2str(nDir),':  ',InputDir])
         try
-            ParentDir = [ParentDir_factor1 num2str(Target_date(iDir)) ParentDir_factor2];
+            switch referenece_type
+                case 'monkey'
+                    disp([num2str(iDir),'/',num2str(nDir),':  ',InputDir])
+                    ParentDir = [ParentDir_factor1 num2str(Target_date(iDir)) ParentDir_factor2];
+                case 'Human'
+                    path_item = split(OutputDir, '/');
+                    day_idx = find(contains(path_item, 'post'));
+                    if isempty(day_idx)
+                        day_idx = find(contains(path_item, 'pre'));
+                    end
+                    disp([num2str(iDir),'/',num2str(nDir),':  ', path_item{day_idx} '_' Target_date{iDir}]);
+                    ParentDir = [ParentDir_factor1 Target_date{iDir} ParentDir_factor2];
+            end
         catch
         end
         
@@ -266,29 +291,47 @@ for iDir=1:nDir
         
         %解析結果を保存するセクション(クロスバリデーションをしたのかしていないのか、どこの筋電データなのか(tim2周りなど)を明記すべき
         if kf == 1 %クロスバリデーションをしていないとき
-            try
-                if iDir == 1 %初日の時
-                    temp = regexp(OutputDir, '\d+', 'match');
-                    num_part = temp{1};
-                end
-                OutputDir_EX = strrep(OutputDir, num_part, num2str(Target_date(iDir))); %OutputDirを踏襲した最終的なOutputDir
-                Outputfile      = fullfile(OutputDir_EX,[InputDir '_NoFold_' filter_contents]); %filter_contentsには.matまでの文字列が含まれているから.matをつける必要なし
-                Outputfile_dat  = fullfile(OutputDir_EX,['t_',InputDir '_NoFold_' filter_contents]);
-
-                save(Outputfile,'-struct','Y');
-                disp(Outputfile)
-
-                save(Outputfile_dat,'-struct','Y_dat');
-                disp(Outputfile_dat)
-            catch
-                Outputfile      = fullfile(OutputDir,[InputDir,'.mat']);
-                Outputfile_dat  = fullfile(OutputDir,['t_',InputDir,'.mat']);
-
-                save(Outputfile,'-struct','Y');
-                disp(Outputfile)
-
-                save(Outputfile_dat,'-struct','Y_dat');
-                disp(Outputfile_dat)
+            switch referenece_type
+                case 'monkey'
+                    try
+                        if iDir == 1 %初日の時
+                            temp = regexp(OutputDir, '\d+', 'match');
+                            num_part = temp{1};
+                        end
+                        OutputDir_EX = strrep(OutputDir, num_part, num2str(Target_date(iDir))); %OutputDirを踏襲した最終的なOutputDir
+                        Outputfile      = fullfile(OutputDir_EX,[InputDir '_NoFold_' filter_contents]); %filter_contentsには.matまでの文字列が含まれているから.matをつける必要なし
+                        Outputfile_dat  = fullfile(OutputDir_EX,['t_',InputDir '_NoFold_' filter_contents]);
+        
+                        save(Outputfile,'-struct','Y');
+                        disp(Outputfile)
+        
+                        save(Outputfile_dat,'-struct','Y_dat');
+                        disp(Outputfile_dat)
+                    catch
+                        Outputfile      = fullfile(OutputDir,[InputDir,'.mat']);
+                        Outputfile_dat  = fullfile(OutputDir,['t_',InputDir,'.mat']);
+        
+                        save(Outputfile,'-struct','Y');
+                        disp(Outputfile)
+        
+                        save(Outputfile_dat,'-struct','Y_dat');
+                        disp(Outputfile_dat)
+                    end
+                case 'Human'
+                    try
+                        % taskのループによるoutputDirの変更
+                        OutputDir_EX = strrep(OutputDir, Target_date{1}, Target_date{iDir}); %OutputDirを踏襲した最終的なOutputDir
+                        Outputfile      = fullfile([OutputDir_EX '/' Target_date{iDir} '_standard_Nofold.mat']); %filter_contentsには.matまでの文字列が含まれているから.matをつける必要なし
+                        Outputfile_dat  = fullfile([OutputDir_EX '/' 't_' Target_date{iDir} '_standard_Nofold.mat']); 
+        
+                        save(Outputfile,'-struct','Y');
+                        disp(Outputfile)
+        
+                        save(Outputfile_dat,'-struct','Y_dat');
+                        disp(Outputfile_dat)
+                    catch
+                        error('どこかでエラーを吐いています．やり直してください')
+                    end
             end
         else %クロスバリデーションをした時(クロスバリデーションをするときは全体データに対して筋シナジー解析をする)
             Outputfile      = fullfile(OutputDir_EX,[InputDir '_' num2str(kf) 'Fold.mat']);

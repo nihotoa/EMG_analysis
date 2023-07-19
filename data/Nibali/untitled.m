@@ -40,6 +40,7 @@ monkeyname='Ni';
 % exp_day = '20220805';
 save_NMF_fold='nmf_result'; %元save_fold
 few_signal = 0; %few_signal(タイミングsignalがLEDカーテンしかない)かどうか
+no_CAI = 1; %LEDカーテンがない 
 task_type = 'drawer'; %'default'/'drawer'
 high_pass = 0; %基線の動揺をなくすためにハイパスをかけるかどうか
 SR = 1375; %筋電データのサンプリングレート
