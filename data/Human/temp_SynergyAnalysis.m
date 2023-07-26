@@ -15,12 +15,12 @@ clear;
 %% set param
 patient_name = 'patientB';
 day_names = {'pre', 'post'};
-def_syn_num = 'auto';%'auto' / 'manual' %閾値から決める場合は'auto', 自分で決める場合はmanual 
+def_syn_num = 'manual';%'auto' / 'manual' %閾値から決める場合は'auto', 自分で決める場合はmanual 
 r2_threshold = 0.8;
 trim_task = 1; %synergy_Hをトリミングするかどうか
 trim_type = 'average'; % 'average'/'stack'
 use_pc = 'mac'; % 'mac'/'windows'
-normalize_sampling = 100; %時間正規化するときの分解能(1000だったら，1000点プロット)
+normalize_sampling = 350; %時間正規化するときの分解能(1000だったら，1000点プロット)
 % filter_l = 2;
 %% code section
 % standard.matとt_~standard.matを選択
@@ -40,13 +40,19 @@ default_path = use_val.pathName;
 for task_num = 1:length(task_names)
     use_val.pathName = strrep(default_path,task_names{1}, task_names{task_num});
     % r2関連の処理
-    if contains(fileNames{1},'t_')
-        r2_fileName = fileNames{2};
-        synergy_fileName = fileNames{1};
-    else
-        r2_fileName = fileNames{1};
-        synergy_fileName = fileNames{2};
+    if task_num == 1
+        if contains(fileNames{1},'t_')
+            default_r2_fileName = fileNames{2};
+            default_synergy_filename = fileNames{1};
+        else 
+            default_r2_fileName = fileNames{1};
+            default_synergy_filename = fileNames{2};
+        end
     end
+    %loadするfile名の変更
+    r2_fileName = strrep(default_r2_fileName, task_names{1}, task_names{task_num});
+    synergy_fileName = strrep(default_synergy_filename, task_names{1}, task_names{task_num});
+
     load([use_val.pathName r2_fileName], 'r2', 'shuffle', 'TargetName');
     figure('position', [100, 100, 800, 800]);
     plot(r2, 'LineWidth',1.5)
@@ -141,12 +147,12 @@ for task_num = 1:length(task_names)
                         Normalized_data(jj,:) = resample(trimmed_data,normalize_sampling,length(trimmed_data));
                     end
                     Normalized_data_mean = mean(Normalized_data);
-                    Normalized_data_std = std(Normalized_data);
+%                     Normalized_data_std = std(Normalized_data);
                     plot(Normalized_data_mean,'r','LineWidth',2);
                     hold on
-                    ar1=area(transpose([Normalized_data_mean-Normalized_data_std;Normalized_data_std+Normalized_data_std]));
-                    set(ar1(1),'FaceColor','None','LineStyle',':','EdgeColor','b')
-                    set(ar1(2),'FaceColor','b','FaceAlpha',0.2,'LineStyle',':','EdgeColor','b') 
+%                     ar1=area(transpose([Normalized_data_mean-Normalized_data_std;Normalized_data_std+Normalized_data_std]));
+%                     set(ar1(1),'FaceColor','None','LineStyle',':','EdgeColor','b')
+%                     set(ar1(2),'FaceColor','b','FaceAlpha',0.2,'LineStyle',':','EdgeColor','b') 
                     grid on;
                     trim_state = '(trimmed_average)';
                 case 'stack'

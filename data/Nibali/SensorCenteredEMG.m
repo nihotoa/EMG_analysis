@@ -32,8 +32,7 @@ uchidaのやつ参照しながら改善していく
 
 【procedure】
 pre : CombineMatfile.m
-post : makeEMGNMF_btcOhta.m
-after-post: makefold.m
+post : plot_each_timing.m
 %}
 
 function [] = SensorCenteredEMG(exp_day)
@@ -41,22 +40,17 @@ function [] = SensorCenteredEMG(exp_day)
 monkeyname='Ni';
 % exp_day = '20220805';
 save_NMF_fold='nmf_result'; %元save_fold
-few_signal = 0; %few_signal(タイミングsignalがLEDカーテンしかない)かどうか
 SR = 1375; %筋電データのサンプリングレート
 trim_range = 200; %[ms] range of the trimmed EMG(片方向のみ)
 timing_name = {'pull', 'food on', 'food off'};
-filt_h = 50;%カットオフ周波数の値
 %↓シナジー解析用のフィルタリングに関する変数
-filter = 1; %フィルターをかけるかどうか
 filter_h = 50; %筋シナジー用のハイパスフィルターのカットオフ周波数(筋電解析のためのハイパスカットオフ周波数filt_hと混合しないように注意する)
-filter_l = 500; %筋シナジー用のローパスフィルターのカットオフ周波数
 after_rect_filter = 20;%整流(rect)後の平滑化のためのローパスフィルターのカットオフ周波数
 outlier_threshold = 120; %(mV)スパイクと判断するoutlierの閾値
 save_each_fig = 0;
 save_combine_fig = 1; 
 save_normalized_fig = 0; %(注意!!)他の2つと併用不可
 
-selEMGs= 1:3;%24] ; % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
 EMGs=cell(3,1) ;
 EMGs{1,1}= 'EPL';
 EMGs{2,1}= 'FCU';
@@ -195,8 +189,9 @@ if save_combine_fig
             EMG_mean_data{ii, jj} = EMG_mean;
             EMG_std = std(EMG_sel);
             if round(max(EMG_mean)) > max_lim
-                max_lim = round(max(EMG_mean));
-                max_lim = ceil(max_lim/10)*10;
+                max_EMG_num = ceil((3*(ii-1)+jj) / 3);
+                max_lim_precise = round(max(EMG_mean));
+                max_lim = ceil(max_lim_precise/10)*10;
             end
             % plot mean & std(no smoothing)
             subplot(EMG_num, trimmed_timing_num, 3*(ii-1)+jj)
@@ -222,7 +217,18 @@ if save_combine_fig
     for ii = 1:numel(axes_handles)
         ylim(axes_handles(ii), [0 max_lim])
     end
-    %save figure
+
+    % find minimum value for offset
+    for ii = 1:EMG_num
+        linked_EMG_sel = EMG_mean_data(ii,:);
+        linked_EMG = cell2mat(linked_EMG_sel);
+        min_value(ii) = min(linked_EMG);
+        if ii == max_EMG_num
+            max_lim_precise = max_lim_precise - min_value(ii);
+            max_lim = ceil(max_lim_precise/10)*10;
+        end
+    end
+    % save figure
     if not(exist([save_NMF_fold '/' monkeyname exp_day '_standard']))
         mkdir([save_NMF_fold '/' monkeyname exp_day '_standard'])
     end
@@ -231,7 +237,7 @@ if save_combine_fig
     hold off;
     close all;
     %save data
-    save([save_NMF_fold '/' monkeyname exp_day '_standard' '/' 'each_timing_mean_data(trim_range=' num2str(trim_range) 'ms).mat'], 'EMG_mean_data', 'max_lim');
+    save([save_NMF_fold '/' monkeyname exp_day '_standard' '/' 'each_timing_mean_data(trim_range=' num2str(trim_range) 'ms).mat'], 'EMG_mean_data', 'max_lim', 'min_value');
 end
 
 if save_normalized_fig
