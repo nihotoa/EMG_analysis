@@ -17,37 +17,18 @@ post: makefold.m
 normalization_methodを適宜変更しましょう
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function makeEMGNMF_btcOhta(Target_date,referenece_type,TimeRange,kf,nrep,nshuffle,alg)
+function [ParentDir, InputDirs, OutputDir] = makeEMGNMF_btcOhta(looped_dir,referenece_type, date, task, ParentDir, InputDirs, OutputDir) %dateとtaskはloopMakeのdata_type = 'each_trial'用;
 
 % makeEMGNMF_btc(TimeRange,kf,nrep,nshuffle,alg)
 % 
 % ex
 % makeEMGNMF_btc([0 480],4,10,1,'mult')
-if nargin<3 %narginは、入力引数の数
-    TimeRange   = [0 Inf];
-    kf          = 1; %ここで、クロスバリデーションを行うかどうか、行う場合は何分割するかを設定できる
-    nrep        = 20;
-    nshuffle    = 1;
-    
-    alg         = 'mult';
-elseif nargin<4
-    kf          = 4;
-    nrep        = 20;
-    nshuffle    = 1;
-    alg         = 'mult';
-elseif nargin<5
-    nrep        = 20;                    
-    nshuffle    = 1;
-    alg         = 'mult';
-elseif nargin<6
-    nshuffle    = 1;
-    alg         = 'mult';
-elseif nargin<7
-    alg         = 'mult';
-end
-
+TimeRange   = [0 Inf];
+kf          = 1; %ここで、クロスバリデーションを行うかどうか、行う場合は何分割するかを設定できる
+nrep        = 20;
+nshuffle    = 1;
 warning('off'); %警告メッセージを非表示にする
-
+alg         = 'mult';
 
 ParentDir    = getconfig(mfilename,'ParentDir');
 try
@@ -60,7 +41,10 @@ end
 
 
 disp("【Please select 'monkey_name' ->'date' -> 'nmf_result' 】")
-ParentDir   = uigetdir(ParentDir,'?e?t?H???_???I???????????????B'); %ダイアログボックスを開いて、選択したディレクトリの絶対パスをParentDirに代入(nmf_resultを選択する)
+if not(exist("ParentDir") == 1)
+    ParentDir   = uigetdir(ParentDir,'?e?t?H???_???I???????????????B'); %ダイアログボックスを開いて、選択したディレクトリの絶対パスをParentDirに代入(nmf_resultを選択する)
+end
+
 if(ParentDir==0)
     disp('User pressed cancel.')
     return;
@@ -69,8 +53,9 @@ else
 end
 
 disp("【Please select '~_standard' fold!】")
-InputDirs   = uiselect(dirdir(ParentDir),1,'??????????Experiments???I??????????????'); %使用するEMGデータの入っているディレクトリを選択
-
+if not(exist("InputDirs")==1)
+    InputDirs   = uiselect(dirdir(ParentDir),1,'??????????Experiments???I??????????????'); %使用するEMGデータの入っているディレクトリを選択
+end
 InputDir    = InputDirs{1};
 % Tarfiles    = dirmat(fullfile(ParentDir,InputDir));
 % Tarfiles    = strfilt(Tarfiles,'~._');
@@ -96,7 +81,9 @@ catch
     OutputDir    = pwd;
 end
 disp("【Please select save_fold to save extracted data】")
-OutputDir   = uigetdir(OutputDir,'?o???t?H???_???I???????????????B'); %結果を保存するディレクトリを選択(選択したディレクトリの絶対パスがOutputDirに代入される)
+if not(exist("OutputDir")==1)
+    OutputDir   = uigetdir(OutputDir,'?o???t?H???_???I???????????????B'); %結果を保存するディレクトリを選択(選択したディレクトリの絶対パスがOutputDirに代入される)
+end
 if(OutputDir==0)
     disp('User pressed cancel.')
     return;
@@ -115,8 +102,8 @@ try %フォルダに日付が含まれている時はtryの中身を使う
             monkey_name = tokens{1}; %Ni
             add_info = tokens{2}; %_standard
         
-            for ii = 1:length(Target_date)
-                InputDirs{ii} = [monkey_name num2str(Target_date(ii)) add_info];
+            for ii = 1:length(looped_dir)
+                InputDirs{ii} = [monkey_name num2str(looped_dir(ii)) add_info];
             end
         
             nDir    = length(InputDirs);
@@ -130,16 +117,21 @@ try %フォルダに日付が含まれている時はtryの中身を使う
             ParentDir_factor2 = tokens{2}; %/nmf_result
 
         case 'Human'
-            for ii = 1:length(Target_date)
-                InputDirs{ii} = InputDir;
+            if not(exist('date') == 1)
+                for ii = 1:length(looped_dir)
+                    InputDirs{ii} = InputDir;
+                end
+    
+                nDir    = length(InputDirs);
+                nTar    = length(Tarfiles);
+    
+                tokens = strsplit(ParentDir,looped_dir{1});
+                ParentDir_factor1 = tokens{1};
+                ParentDir_factor2 = tokens{2};
+            else %dateが存在する時(each_trialのとき)
+                nDir    = length(InputDirs);
+                nTar    = length(Tarfiles);
             end
-
-            nDir    = length(InputDirs);
-            nTar    = length(Tarfiles);
-
-            tokens = strsplit(ParentDir,Target_date{1});
-            ParentDir_factor1 = tokens{1};
-            ParentDir_factor2 = tokens{2};
     end
 catch
     nDir    = length(InputDirs);
@@ -154,15 +146,19 @@ for iDir=1:nDir
             switch referenece_type
                 case 'monkey'
                     disp([num2str(iDir),'/',num2str(nDir),':  ',InputDir])
-                    ParentDir = [ParentDir_factor1 num2str(Target_date(iDir)) ParentDir_factor2];
+                    ParentDir = [ParentDir_factor1 num2str(looped_dir(iDir)) ParentDir_factor2];
                 case 'Human'
                     path_item = split(OutputDir, '/');
                     day_idx = find(contains(path_item, 'post'));
                     if isempty(day_idx)
                         day_idx = find(contains(path_item, 'pre'));
                     end
-                    disp([num2str(iDir),'/',num2str(nDir),':  ', path_item{day_idx} '_' Target_date{iDir}]);
-                    ParentDir = [ParentDir_factor1 Target_date{iDir} ParentDir_factor2];
+                    if not(exist('date')==1)
+                        disp([num2str(iDir),'/',num2str(nDir),':  ', path_item{day_idx} '_' looped_dir{iDir}]);
+                        ParentDir = [ParentDir_factor1 looped_dir{iDir} ParentDir_factor2];
+                    else
+                        disp([num2str(iDir),'/',num2str(nDir),':  ', path_item{day_idx} '_' task '_Trial' num2str(iDir)]);
+                    end
             end
         catch
         end
@@ -179,7 +175,7 @@ for iDir=1:nDir
             
             XData   = ((1:length(Tar.Data))-1)/Tar.SampleRate; %サンプル数をサンプリングレートで割って、秒に単位変換する
             ind     = (XData >= TimeRange(1) & XData <= TimeRange(2)); %XDataの各要素が、TimeRangeの範囲であるか(logic型で0,1を返す)
-            TotalTime=sum(ind)/Tar.SampleRate; %使用する筋電データがトータルで何秒間か？
+            TotalTime = sum(ind)/Tar.SampleRate; %使用する筋電データがトータルで何秒間か？
 %             TimeRange2  = [TimeRange(1)+Tar.TimeRange(1),TimeRange(1)+Tar.TimeRange(1)+TotalTime]; %何に使うかわからないが、多分よろしくないデータが入っている
                         
             if(iTar==1) %iTarはfor文よって更新される(1~使用する筋電データの数)　元データXの配列を用意する
@@ -298,7 +294,7 @@ for iDir=1:nDir
                             temp = regexp(OutputDir, '\d+', 'match');
                             num_part = temp{1};
                         end
-                        OutputDir_EX = strrep(OutputDir, num_part, num2str(Target_date(iDir))); %OutputDirを踏襲した最終的なOutputDir
+                        OutputDir_EX = strrep(OutputDir, num_part, num2str(looped_dir(iDir))); %OutputDirを踏襲した最終的なOutputDir
                         Outputfile      = fullfile(OutputDir_EX,[InputDir '_NoFold_' filter_contents]); %filter_contentsには.matまでの文字列が含まれているから.matをつける必要なし
                         Outputfile_dat  = fullfile(OutputDir_EX,['t_',InputDir '_NoFold_' filter_contents]);
         
@@ -318,11 +314,17 @@ for iDir=1:nDir
                         disp(Outputfile_dat)
                     end
                 case 'Human'
-                    try
-                        % taskのループによるoutputDirの変更
-                        OutputDir_EX = strrep(OutputDir, Target_date{1}, Target_date{iDir}); %OutputDirを踏襲した最終的なOutputDir
-                        Outputfile      = fullfile([OutputDir_EX '/' Target_date{iDir} '_standard_Nofold.mat']); %filter_contentsには.matまでの文字列が含まれているから.matをつける必要なし
-                        Outputfile_dat  = fullfile([OutputDir_EX '/' 't_' Target_date{iDir} '_standard_Nofold.mat']); 
+                    try 
+                        if not(exist('date') == 1)
+                            % taskのループによるoutputDirの変更
+                            OutputDir_EX = strrep(OutputDir, looped_dir{1}, looped_dir{iDir}); %OutputDirを踏襲した最終的なOutputDir
+                            Outputfile = fullfile([OutputDir_EX '/' looped_dir{iDir} '_standard_Nofold.mat']); %filter_contentsには.matまでの文字列が含まれているから.matをつける必要なし
+                            Outputfile_dat = fullfile([OutputDir_EX '/' 't_' looped_dir{iDir} '_standard_Nofold.mat']); 
+                        else %each_trialの時
+                            OutputDir_EX = strrep(OutputDir, ['trial' sprintf('%02d', 1)], ['trial' sprintf('%02d', iDir)]);
+                            Outputfile = fullfile([OutputDir_EX '/' task '_standard_Nofold.mat']); 
+                            Outputfile_dat = fullfile([OutputDir_EX '/' 't_' task '_standard_Nofold.mat']); 
+                        end
         
                         save(Outputfile,'-struct','Y');
                         disp(Outputfile)

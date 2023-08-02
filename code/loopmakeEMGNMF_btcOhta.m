@@ -9,6 +9,7 @@ makeEMGNMF_bctOhtaを日付でループするための関数
 clear;
 %% set param
 reference_type = 'Human'; %which type of data you want to analyze ('monkey'/'Human') 
+data_type = 'each_trial'; % (reference_type == 'Human' の時)データセットとして，すべてのレコーディング区間を使用するか，taskごとに区切られたものを使用するか 'all'/'each_trial'
 monkey_name = 'Nibali';
 setting_Target_date = 0; %(if you will calculate in 'monkey')0:手動でTarget_dateを設定したとき 1:devide_infoから日付を設定したとき(生成したグラフやディレクトリの名前を決定するときに、devide_infoを使用したことをわかるようにしたい)
 Target_date = [20230420]; %(if you will calculate in 'monkey')相関を求めたい対象の実験日を配列にまとめる
@@ -35,5 +36,22 @@ switch reference_type
         file_info = dir(reference_dir);
         Task_dirs = {file_info([file_info.isdir]).name}; 
         Task_dirs = Task_dirs(~ismember(Task_dirs, {'.', '..'}));
-        makeEMGNMF_btcOhta(Task_dirs, reference_type)
+        switch data_type
+            case 'all'
+                makeEMGNMF_btcOhta(Task_dirs, reference_type)
+            case 'each_trial'
+                path_elements = split(reference_dir, '/');
+                date = path_elements{end};
+                for ii = 1:length(Task_dirs)
+                    if ii == 1
+                        [ParentDir_def, InputDirs_def, OutputDir_def] = makeEMGNMF_btcOhta('nothing',reference_type, date, Task_dirs{ii});
+                    else
+                        ParentDir = ParentDir_def; %をうまく書き換える
+                        OutputDir = OutputDir_def; %をうまく書き換える
+                        %trial_num = all_timingの長さ
+                        InputDirs = MakeTaskFoldersCell(trial_num, 'trial');
+                        makeEMGNMF_btcOhta('nothing',reference_type ,date, Task_dirs{ii}, ParentDir, InputDirs, OutputDir)
+                    end
+                end
+        end
 end

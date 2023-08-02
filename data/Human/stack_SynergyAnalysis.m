@@ -12,6 +12,7 @@ post: nothing
 【課題点】
 ・ループ数たびにcell配列を作るように変更する(今のようにループごとに変数の形が変わると，次のtaskのループに入った時に，その変数をclearしなければいけないから)
 ・シナジーのsortのアルゴリズム(k_arrの決定)として，Hをもとにk_arrを決めるアルゴリズムを追加する
+・先にk＿arrを決めてあげるアルゴリズムを作成する必要がある
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
@@ -22,6 +23,7 @@ def_syn_num = 'manual';%'auto' / 'manual' %解析に用いるシナジーの数.
 r2_threshold = 0.8;
 use_pc = 'mac'; % 'mac'/'windows'
 out_day = {'pre1', 'post4', 'post4_right'}; %stackに追加したくない日付がある場合にはここで指定する.
+align_type = 'W'; %'W' or 'H';
 % filter_l = 2;
 %% code section
 % 解析に使用する，全日付のフォルダ名を取得
@@ -195,11 +197,22 @@ for task_num = 1:length(task_folders)
         % 正規表現を使って数字の部分を抽出
         ref_syn_num = regexp(use_W_list{ii}, pattern, 'match');
         ref_syn_num = str2double(ref_syn_num{1});
-        if length(eval(['use_W_' num2str(ref_syn_num)])) == 1
+        if length(eval(['use_W_' num2str(ref_syn_num)])) == 1 %その最適シナジー数のデータが1日分しかなかった場合
             %並び替えの必要なし
             k_arr{ref_syn_num} = 1;
         else
-            k_arr{ref_syn_num} = align_W_synergy(eval(['use_W_' num2str(ref_syn_num)]), ref_syn_num, eval(['day_folders_syn' num2str(ref_syn_num)]));
+            switch align_type
+                case 'W'
+                    k_arr{ref_syn_num} = align_W_synergy(eval(['use_W_' num2str(ref_syn_num)]), ref_syn_num, eval(['day_folders_syn' num2str(ref_syn_num)]));
+                case 'H'
+                    % Hでk_arrを作る方法を考える
+                    % まず，その最適シナジーに属するすべての日付の，すべてのシナジーのtask平均のsynergy_Hを求める
+                    [new_use_H] = calcTaskAverage_EMG(use_val, task_folders, task_num, ref_syn_num, eval(['use_H_' num2str(ref_syn_num)]), eval(['day_folders_syn' num2str(ref_syn_num)]));
+                    % new_use_Hのデータ長を揃える
+                    align_use_H = align_data_length(new_use_H, ref_syn_num);
+                    % align_use_Hを使用して，k_arrを求めていく
+                    k_arr{ref_syn_num} = align_H_syenrgy(align_use_H, ref_syn_num, eval(['day_folders_syn' num2str(ref_syn_num)]));
+            end
         end
     end
     
@@ -220,9 +233,9 @@ for task_num = 1:length(task_folders)
                 clear W_data
                 for kk = 1:length(eval(['use_W_' num2str(ref_syn_num)]))
                     if kk == 1
-                        W_data(:, 1) = eval(['use_W_' num2str(ref_syn_num) '{1}(:, jj);']); %初日のシナジーjjのデータ
+                        W_data(:, 1) = eval(['use_W_' num2str(ref_syn_num) '{kk}(:, jj);']); %初日のシナジーjjのデータ
                     else
-                        W_data(:, kk) = eval(['use_W_' num2str(ref_syn_num) '{kk}(:, k_arr{ref_syn_num}(jj));']);%初日のjjに対応するシナジー
+                        W_data(:, kk) = eval(['use_W_' num2str(ref_syn_num) '{kk}(:, k_arr{ref_syn_num}(jj,kk-1));']);%初日のjjに対応するシナジー
                     end
                 end
                 bar(x, W_data,'EdgeColor','none')
@@ -248,7 +261,7 @@ for task_num = 1:length(task_folders)
             continue
         else
             ref_syn_num = ii;
-            for jj = 1:ref_syn_num
+            for jj = 1:ref_syn_num %
                 if jj == 1
                     figure('position', [100, 100, 700, 800]);
                 end
@@ -256,8 +269,9 @@ for task_num = 1:length(task_folders)
                 subplot(ref_syn_num,1,jj)
                 for kk = 1:length(eval(['use_W_' num2str(ref_syn_num)])) %その最適シナジー数の日付の数
                     clear H_data_task
-                    if kk == 1
-                        H_data = eval(['use_H_' num2str(ref_syn_num) '{1}(jj, :);']); %初日のシナジーjjのデータ
+                    if kk == 1 %初日の時
+                        %H_data = eval(['use_H_' num2str(ref_syn_num) '{1}(jj, :);']); %初日のシナジーjjのデータ
+                        H_data = eval(['use_H_' num2str(ref_syn_num) '{kk}(jj, :);']);%初日のjjに対応するシナジー
                         %H_dataをトリミングして，タスク平均を出す
                         timing_path = [pwd '/' use_val.patient_name '/' eval(['day_folders_syn' num2str(ref_syn_num) '{kk}'])];
                         load([timing_path '/' task_folders{task_num} '_timing.mat'], 'all_timing_data');
@@ -280,7 +294,8 @@ for task_num = 1:length(task_folders)
                     else
                         timing_path = [pwd '/' use_val.patient_name '/' eval(['day_folders_syn' num2str(ref_syn_num) '{kk}'])];
                         load([timing_path '/' task_folders{task_num} '_timing.mat'], 'all_timing_data');
-                        H_data = eval(['use_H_' num2str(ref_syn_num) '{kk}(k_arr{ref_syn_num}(jj), :);']);%初日のjjに対応するシナジー
+                        %H_data = eval(['use_H_' num2str(ref_syn_num) '{kk}(k_arr{ref_syn_num}(jj), :);']);%初日のjjに対応するシナジー
+                        H_data = eval(['use_H_' num2str(ref_syn_num) '{kk}(k_arr{ref_syn_num}(jj,kk-1), :);']);%初日のjjに対応するシナジー
                         for ll = 1:length(all_timing_data) %task中の活動パターンの平均をとる
                             H_data_task{ll, 1} = H_data(1, all_timing_data(1, ll)+1:all_timing_data(2,ll));
                         end
@@ -318,6 +333,7 @@ for task_num = 1:length(task_folders)
 end
 
 %% set local function
+% synergy解析結果を保存するディレクトリを作成するためのfunction.(フォルダの作成と，保存先のディレクトリの取得)
 function [use_val] = make_syn_fold(use_val, ref_syn_num)
 input_param_num = nargin;
 switch input_param_num
@@ -341,6 +357,7 @@ switch input_param_num
 end
 end
 
+% Wデータを参照して，k_arrを取得するためのfunction
 function [k_arr] = align_W_synergy(use_W, ref_syn_num, day_folders)
 % align W_synergy to plot & create list of each synergy correspondence
 align_use_W = use_W; %k_arrの作成用にuse_wを複製する
@@ -359,4 +376,86 @@ for kk = 1:ref_syn_num %初日のシナジー数
         k_arr(kk,ll-1) = I;
     end
 end   
+end
+
+
+% H_dataをtaskごとにトリミングしたのち，それぞれのH_synergyの平均値を求める
+function [new_use_H] = calcTaskAverage_EMG(use_val, task_folders, task_num,ref_syn_num, use_H, day_folders)
+%{
+入力引数の説明
+use_H: 最適シナジー数におけるsynergy_Hのデータの入ったcell配列(例)最適シナジー数3 → use_H_3
+day_folders: その際的シナジー数をとる日付の情報の入ったcell配列(例)最適シナジー数3 → day_folders_syn3
+課題：jj, kkが決まっていない
+%}
+for ii = 1:length(day_folders)
+    for jj = 1:ref_syn_num %シナジーjj
+        H_data = use_H{ii}(jj, :); %初日のシナジーjjのデータ
+        %H_dataをトリミングして，タスク平均を出す
+        timing_path = [pwd '/' use_val.patient_name '/' day_folders{ii}];
+        load([timing_path '/' task_folders{task_num} '_timing.mat'], 'all_timing_data');
+        H_data_task = cell(length(all_timing_data),1);
+        for ll = 1:length(all_timing_data) %task中の活動パターンの平均をとる
+            H_data_task{ll, 1} = H_data(1, all_timing_data(1, ll)+1:all_timing_data(2,ll));
+        end
+        a = 0;
+        for ll = 1:length(all_timing_data) %平均サンプル数を求める
+            a = a + length(H_data_task{ll});
+        end
+        average_sample_num = round(a/length(all_timing_data));
+        
+        for ll = 1:length(all_timing_data) %平均サンプル数を求める
+            H_data_task{ll} = resample(H_data_task{ll}, average_sample_num, length(H_data_task{ll}));
+        end       
+        H_data_ave = mean(cell2mat(H_data_task));
+        new_use_H{ii ,1}(jj,:) = H_data_ave;
+    end
+end
+end
+
+% H_syergyによるk_arrを求めるために，全日分のH_syenrgyのデータ長を揃える
+function align_use_H = align_data_length(new_use_H, ref_syn_num)
+%{
+入力引数の説明
+new_use_H:task_averageが出されているHのcell配列(おそらくmain関数の方でもnew_use_Hっていう名前で保存されているはず)
+出力引数の説明
+align_use_H: データ長の揃えられた，各日付の各synergy_H
+%}
+% 全日付でのデータ長の平均値を求める
+a = 0;
+for ii = 1:length(new_use_H)
+    a = a + length(new_use_H{ii});
+end
+average_length = round(a/length(new_use_H));
+%average_lengthでresampling
+for ii = 1:length(new_use_H)
+    for jj = 1:ref_syn_num
+        align_use_H{ii,1}(jj,:) = resample(new_use_H{ii}(jj, :), average_length, length(new_use_H{ii}(jj, :)));
+    end
+end
+end
+
+function k_arr = align_H_syenrgy(use_H, ref_syn_num, day_folders)
+%{
+入力引数の説明
+use_H: task平均のH_synergy(すべてのデータ長が揃えられていること)
+ref_syn_num:最適シナジーの数
+day_folders: その最適シナジー数におけるday_folders
+%}
+k_arr = zeros(ref_syn_num, length(day_folders)-1);
+for ii = 2:length(use_H) %比較するdayごとのループ
+    for jj = 1:ref_syn_num %初日のシナジーjj
+        first_day_data = use_H{1}(jj, :);
+        xcorr_value_list = zeros(1,ref_syn_num);
+        for kk = 1:ref_syn_num %初日のシナジーjjとii日目のシナジーkkとの比較
+            referenced_data = use_H{ii}(kk, :);
+            xcorr_function = xcorr(first_day_data, referenced_data, 'normalized');
+            %相互相関関数の最大値を取得(波によって，位相差が異なる)
+            xcorr_value = max(xcorr_function(length(referenced_data)-1-50:length(referenced_data)-1+50));
+            xcorr_value_list(kk) = xcorr_value;
+        end
+        [~,max_idx] = max(xcorr_value_list);
+        k_arr(jj, ii-1) = max_idx;
+        use_H{ii}(max_idx, :) = -100000;
+    end
+end
 end

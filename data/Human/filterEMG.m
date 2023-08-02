@@ -8,7 +8,7 @@ Last Modification: 2023.05.01
 
 【procedure】
 pre: ExtractEMGData.m
-post: makeEMGNMF_Oya or Ohta (交差検証　必要→Oya　しない→Ohta 
+post: (if you want to devide all data into each trial data) devide filteredEMG (else)makeEMGNMF_Oya or Ohta (交差検証　必要→Oya　しない→Ohta) 
 after-post: temp_SynergyAnalysis.m
 ''
 【課題点】

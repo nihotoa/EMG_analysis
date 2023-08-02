@@ -7,8 +7,6 @@ pre: makeEMGNMF_ohta
 post: nothing
 閾値を手動で切るためのコードを作成する
 【注意点】
-・コード中でEMG_filterというlocal関数がコメントアウトされているが，
-　これは，フィルタリングした後の波が思ったより高周波だったので，後付けでローパスかけようとしたもの
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
@@ -147,12 +145,12 @@ for task_num = 1:length(task_names)
                         Normalized_data(jj,:) = resample(trimmed_data,normalize_sampling,length(trimmed_data));
                     end
                     Normalized_data_mean = mean(Normalized_data);
-%                     Normalized_data_std = std(Normalized_data);
+                    Normalized_data_std = std(Normalized_data);
                     plot(Normalized_data_mean,'r','LineWidth',2);
                     hold on
-%                     ar1=area(transpose([Normalized_data_mean-Normalized_data_std;Normalized_data_std+Normalized_data_std]));
-%                     set(ar1(1),'FaceColor','None','LineStyle',':','EdgeColor','b')
-%                     set(ar1(2),'FaceColor','b','FaceAlpha',0.2,'LineStyle',':','EdgeColor','b') 
+                    ar1=area(transpose([Normalized_data_mean-Normalized_data_std;Normalized_data_std+Normalized_data_std]));
+                    set(ar1(1),'FaceColor','None','LineStyle',':','EdgeColor','b')
+                    set(ar1(2),'FaceColor','b','FaceAlpha',0.2,'LineStyle',':','EdgeColor','b') 
                     grid on;
                     trim_state = '(trimmed_average)';
                 case 'stack'
@@ -179,22 +177,6 @@ for task_num = 1:length(task_names)
     %動作のプロット(skeltonを作成する & 回内と回外がないかを確認する)
 end
 %% decide local function
-%{
-function [processed_EMG] = EMG_filter(filter_l, SamplingRate, temp_EMG)
-%high_pass
-% [B,A] = butter(6, (filter_h .* 2) ./ SamplingRate, 'high');
-% temp_EMG = temp_EMG;
-% temp_EMG = filtfilt(B,A,temp_EMG);
-%low_pass(500Hz)
-% [B,A] = butter(6, (500 .* 2) ./ use_val.SamplingRate, 'low');
-% temp_EMG = filtfilt(B,A,temp_EMG);
-
-%smoothing(平滑化)→整流した後にタスクを重ね合わて、その後に平均をとって、その後にこの処理をするべき
-[B,A] = butter(6, (filter_l .* 2) ./ SamplingRate, 'low');
-processed_EMG = filtfilt(B,A,temp_EMG);
-end
-%}
-
 function [use_val] = make_syn_fold(use_val, ref_syn_num)
 input_param_num = nargin;
 switch input_param_num
