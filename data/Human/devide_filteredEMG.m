@@ -6,6 +6,7 @@ devide whole recorded data into each task data and save these data
 procedure:
 pre: filtered data
 post: makeEMGNMFbtcOya or Ohta
+after-post: LoopMergeEachTrialSynergy.m
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear; 

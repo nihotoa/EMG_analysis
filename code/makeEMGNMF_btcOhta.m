@@ -17,12 +17,33 @@ post: makefold.m
 normalization_methodを適宜変更しましょう
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [ParentDir, InputDirs, OutputDir] = makeEMGNMF_btcOhta(looped_dir,referenece_type, date, task, ParentDir, InputDirs, OutputDir) %dateとtaskはloopMakeのdata_type = 'each_trial'用;
+function [ParentDir, InputDirs, OutputDir, Tarfiles] = makeEMGNMF_btcOhta(looped_dir,referenece_type, date, task, ParentDir, InputDirs, OutputDir, Tarfiles) %dateとtaskはloopMakeのdata_type = 'each_trial'用;
 
 % makeEMGNMF_btc(TimeRange,kf,nrep,nshuffle,alg)
 % 
 % ex
 % makeEMGNMF_btc([0 480],4,10,1,'mult')
+not_Parentdir_flag = 0;
+not_InputDirs_flag = 0;
+not_OutputDir_flag = 0;
+not_Tarfiles_flag = 0;
+
+if not(exist("ParentDir")==1)
+    not_Parentdir_flag = 1;
+end
+
+if not(exist("InputDirs")==1)
+    not_InputDirs_flag = 1;
+end
+
+if not(exist("OutputDir")==1)
+    not_OutputDir_flag = 1;
+end
+
+if not(exist("Tarfiles")==1)
+    not_Tarfiles_flag = 1;
+end
+
 TimeRange   = [0 Inf];
 kf          = 1; %ここで、クロスバリデーションを行うかどうか、行う場合は何分割するかを設定できる
 nrep        = 20;
@@ -30,18 +51,16 @@ nshuffle    = 1;
 warning('off'); %警告メッセージを非表示にする
 alg         = 'mult';
 
-ParentDir    = getconfig(mfilename,'ParentDir');
-try
-    if(~exist(ParentDir,'dir'))
+if not_Parentdir_flag
+    ParentDir    = getconfig(mfilename,'ParentDir');
+    try
+        if(~exist(ParentDir,'dir'))
+            ParentDir    = pwd;
+        end
+    catch
         ParentDir    = pwd;
     end
-catch
-    ParentDir    = pwd;
-end
-
-
-disp("【Please select 'monkey_name' ->'date' -> 'nmf_result' 】")
-if not(exist("ParentDir") == 1)
+    disp("【Please select 'monkey_name' ->'date' -> 'nmf_result' 】")
     ParentDir   = uigetdir(ParentDir,'?e?t?H???_???I???????????????B'); %ダイアログボックスを開いて、選択したディレクトリの絶対パスをParentDirに代入(nmf_resultを選択する)
 end
 
@@ -52,18 +71,20 @@ else
     setconfig(mfilename,'ParentDir',ParentDir);
 end
 
-disp("【Please select '~_standard' fold!】")
-if not(exist("InputDirs")==1)
+
+if not_InputDirs_flag
+    disp("【Please select '~_standard' fold!】")
     InputDirs   = uiselect(dirdir(ParentDir),1,'??????????Experiments???I??????????????'); %使用するEMGデータの入っているディレクトリを選択
 end
 InputDir    = InputDirs{1};
 % Tarfiles    = dirmat(fullfile(ParentDir,InputDir));
 % Tarfiles    = strfilt(Tarfiles,'~._');
 % Tarfiles    = uiselect(sortxls(Tarfiles),1,'??????????file???I??????????????');
-Tarfiles = sortxls(dirmat(fullfile(ParentDir,InputDir))); %InputDir内の全てのファイルの名前を代入
-
-disp("【Please select muscle data(.mat) what you want to use】")
-Tarfiles    = uiselect(Tarfiles,1,'Target?');
+if not_Tarfiles_flag
+    Tarfiles = sortxls(dirmat(fullfile(ParentDir,InputDir))); %InputDir内の全てのファイルの名前を代入
+    disp("【Please select muscle data(.mat) what you want to use】")
+    Tarfiles    = uiselect(Tarfiles,1,'Target?');
+end
 %Tarfiles      = load('D:\MATLABCodes\Toolboxes\force\MuscleList.mat');
 % try 
 % Tarfiles      = Tarfiles.TargetName;
@@ -73,22 +94,22 @@ Tarfiles    = uiselect(Tarfiles,1,'Target?');
 
 %OutputDir    = getconfig(mfilename,'OutputDir');
 OutputDir = [ParentDir '/' InputDir];
-try
-    if(~exist(OutputDir,'dir'))
+if not_OutputDir_flag
+    try
+        if(~exist(OutputDir,'dir'))
+            OutputDir    = pwd;
+        end
+    catch
         OutputDir    = pwd;
     end
-catch
-    OutputDir    = pwd;
-end
-disp("【Please select save_fold to save extracted data】")
-if not(exist("OutputDir")==1)
+    disp("【Please select save_fold to save extracted data】")
     OutputDir   = uigetdir(OutputDir,'?o???t?H???_???I???????????????B'); %結果を保存するディレクトリを選択(選択したディレクトリの絶対パスがOutputDirに代入される)
-end
-if(OutputDir==0)
-    disp('User pressed cancel.')
-    return;
-else
-    setconfig(mfilename,'OutputDir',OutputDir);
+    if(OutputDir==0)
+        disp('User pressed cancel.')
+        return;
+    else
+        setconfig(mfilename,'OutputDir',OutputDir);
+    end
 end
 
 try %フォルダに日付が含まれている時はtryの中身を使う

@@ -44,13 +44,19 @@ switch reference_type
                 date = path_elements{end};
                 for ii = 1:length(Task_dirs)
                     if ii == 1
-                        [ParentDir_def, InputDirs_def, OutputDir_def] = makeEMGNMF_btcOhta('nothing',reference_type, date, Task_dirs{ii});
+                        [ParentDir_def, InputDirs_def, OutputDir_def, Tarfiles] = makeEMGNMF_btcOhta('nothing',reference_type, date, Task_dirs{ii});
                     else
-                        ParentDir = ParentDir_def; %をうまく書き換える
-                        OutputDir = OutputDir_def; %をうまく書き換える
+                        ParentDir = strrep(ParentDir_def, Task_dirs{1}, Task_dirs{ii}); %task部分を書き換える
+                        OutputDir = strrep(ParentDir_def, Task_dirs{1}, Task_dirs{ii}); %task部分書き換える
                         %trial_num = all_timingの長さ
+                        try
+                            load([reference_dir '/' 'task' sprintf('%02d', ii) '_timing.mat'], 'all_timing_data')
+                        catch %sそのタスクが存在しない時
+                            continue
+                        end
+                        trial_num = length(all_timing_data);
                         InputDirs = MakeTaskFoldersCell(trial_num, 'trial');
-                        makeEMGNMF_btcOhta('nothing',reference_type ,date, Task_dirs{ii}, ParentDir, InputDirs, OutputDir)
+                        makeEMGNMF_btcOhta('nothing',reference_type ,date, Task_dirs{ii}, ParentDir, InputDirs, OutputDir, Tarfiles)
                     end
                 end
         end
