@@ -15,15 +15,6 @@ post: nothing
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function MergeEachTrialSynergy(patient_name, day_name, task_name, common_string, ref_syn_num, most_dark_value, plot_type)
-%% set param
-% patient_name = 'patientB';  %後で消す(この関数を呼び出すfunctionないで定義する)
-% day_name = 'post1'; %後で消す
-% task_name = 'Task01'; %後で消す
-% common_string = '-hp50Hz-rect-lp3Hz-ds100Hz'; %後で消す
-% ref_syn_num = 3; %後で消す?(この中で決める?) %自動じゃない方がいい気がするから消していいと思う
-% most_dark_value = 80; %後で消す
-% plot_type = 'mean'; %'stack' / 'mean' %後で消す
-%% code section
 trial_data_path = [pwd '/' patient_name '/' day_name '/' task_name '/' 'nmf_result' '/patientB_standard/each_trials'];
 trial_names = getDirectoryInfo(trial_data_path, 'trial', 'name');
 trial_num = length(trial_names);

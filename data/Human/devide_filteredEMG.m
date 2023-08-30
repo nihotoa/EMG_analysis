@@ -15,7 +15,7 @@ patient_name = 'patientB';
 task_num = 5; %taskの個数(日によって4の時もあるが,大きい方に合わせた)
 day_names_prefix = {'pre', 'post'};
 specific_muscle_name = 'IOD-1'; %処理の接尾語を見つけるための文字列
-%% code section
+%% code sectionwhi
 day_fold_path = [pwd '/' patient_name];
 day_names = getDirectoryInfo(day_fold_path, day_names_prefix, 'name');
 task_names = MakeTaskFoldersCell(task_num);

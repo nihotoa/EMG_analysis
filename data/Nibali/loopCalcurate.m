@@ -8,17 +8,18 @@ please set current dir as 'MATLAB -> data -> Nibali'
 Use another function with using loop
 [procedure]
 pre: none
-post: please refer the text of 'untitled.m'
+post: please refer the text of 'untitled.m' or 'SensorCenteredEMG.m'
 [caution!!!]
 if you conduct ' Copy_of_sample_data_walkthrough.m', please remove the path of 'MATLAB' → 'Code' and set the path of 'MATLAB' → 'Nibali'
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% set param
-exp_days = [20230707 20230710 20230711 20230712 20230714 20230718 20230719 20230720 20230721 20230724 20230726];
-conduct_Copy_of = 0;
+%exp_days = [20230707 20230710 20230711 20230712 20230714 20230718 20230719 20230720 20230721 20230724 20230726];
+exp_days = [20230814 20230815 20230816];
+conduct_Copy_of = 1;
 EMG_recording_type = 'AlphaOmega'; %which device you used to record EMG ('Ripple'/'AlphaOmega')
-conduct_CombineMatfile = 0;
+conduct_CombineMatfile = 1;
 process_type = 'normal'; % 'normal' / 'no_sensor'(基本normal, 新しいタスクの探索のために，タスク定義を従来のものと変更する必要があったので，task_defineを作った)
 signal_type = 'no_CAI';  
 electrode_restrict = {'020','021','022'};

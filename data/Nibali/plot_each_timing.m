@@ -10,13 +10,14 @@ plot stack each timing EMG with referencing extracted mean_data(which is extract
 
 [how to use]
 please use this in 'Nibali' directory
+
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
 monkeyname='Ni';
-exp_days = [20230707 20230710 20230711 20230712 20230714 20230718 20230719 20230720 20230721 20230724];
-% exp_days = [20230707 20230710 20230711 20230712 20230720 20230721 20230724 20230726];
+exp_days = [20230707 20230710 20230711 20230712 20230714 20230718 20230719 20230720 20230721 20230724 20230726 20230807 20230808 20230814 20230815 20230816];
+% exp_days = [20230707 20230710 20230711 20230712 20230726 20230807 20230808];
 control_days = [20230707, 20230710, 20230711 20230712]; %please don't change!!
 merge_type = 'Control'; %whether to represent the control data in one ('None'/ 'Control')
 save_NMF_fold='nmf_result'; %元save_fold
@@ -84,6 +85,14 @@ for ii = 1:day_num
                     fill(x2, inBetween, 'b', 'FaceAlpha',0.1, 'LineStyle',':', 'EdgeColor','b', 'DisplayName', '');
                     hold on;
                     plot(x, EMG_mean_data{kk,ll}, 'b', 'LineWidth', 2, 'DisplayName', 'Control-data')
+%                     %decoration
+%                     %ylim,title,xline
+%                     grid on;
+%                     xline(0, 'LineWidth',1.5, 'DisplayName', '')
+%                     xlabel('elapsed time[ms]', 'FontSize',15)
+%                     ylabel('Amplitude[mV]', 'FontSize',15)
+%                     set(gca, 'FontSize', 15)
+%                     title([EMGs{kk} '-' timing_name{ll}  ' centered EMG'], 'FontSize',15)
                     if kk == 1 && ll == 1
                         switch plot_legend
                             case 1

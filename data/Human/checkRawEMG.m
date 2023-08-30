@@ -109,16 +109,13 @@ for ii = 1:length(RawEMG_fileNames) %タスクの種類???数
     if merge_EMG_figure
         figure('position', [100, 100, 1280, 720]);
     end
-    for jj = 1:length(filtered_EMG_fileNames) %こ???ループ???の筋肉の??ータが，生??ータのどの電極に対する??
+    for jj = 1:length(filtered_EMG_fileNames) %筋肉ごとにループする
         load([filtered_EMG_pathName filtered_EMG_fileNames{jj}], 'Data','Name');
-        all_filtered_data{jj,1} = Data;
         filtered_data = Data;
         Name = strrep(Name, unique_string, ''); 
-        all_filtered_name{jj,1} = Name;
-        % 
         selected_electrode = use_electrode_num(find(strcmp(EMGs, Name))); %filteredデータに対応する，生データの電極番号を返す
         raw_data = EMG_data(selected_electrode, :);
-        try %timingデータがある時(trimできる)
+        try %timingデータがある時(trimできる)ここで切り取られる範囲が決まる
             load([RawEMG_pathName task_name '_timing.mat'], 'all_timing_data', 'SamplingRate')
             raw_timing_data = all_timing_data * (1000/SamplingRate); %元の筋電のサンプリングレート/SamplingRate           
             raw_data = raw_data(1, raw_timing_data(1,1):raw_timing_data(2,include_task)); %トリミング
