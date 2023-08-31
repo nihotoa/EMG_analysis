@@ -1,17 +1,25 @@
 %{ 
-how to use this:
-set current directry as 'Yachimun'
-please change 'set param' while referencing the RAW_data(ex.)F170516_0002
-【function】
-get the information which is used for merge data & analyze 
+[your operation]
+1. Go to the directory named 'Yachimun' (directory where this code exists)
+2. Change some parameters (please refer to 'set param' section)
+3. Please run this code
 
-【procedure】
+[role of this code]
+get the information which is used for merge data
+
+
+[Saved data location]
+location: Yachimun/easyData
+file_name: ~_standard.mat (ex.) F170516_standard.mat
+
+[procedure]
 pre: Nothing
-post : SAVE4NMF
+post : (if you want to conduct synergy analysis) SAVE4NMF.m
+       (if you want to conduct EMG analysis) runnningEasyfunc.m
 %}
 
 %% set param
-monkeyname = 'F' ; %initial string of measurement file
+monkeyname = 'F' ; % prefix of recorded file(ex. F1710516-0002)
 taskname = 'standard'; %you don't need to change
 save_fold = 'easyData'; %you don't need to change
 

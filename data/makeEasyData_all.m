@@ -1,6 +1,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%{
 % coded by Naoki Uchida
 % last modification : 2021.03.23
+this function if used in runnningEasyfunc.m
+[procedure]
+pre: nothing
+post: nothing
+%}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [EMGs,ECoGs,Tp,Tp3] = makeEasyData_all(monkeyname, xpdate_num, file_num, save_fold)
 %% set file information
@@ -22,7 +28,9 @@ switch monkeyname
     case 'Ya'
         real_name = 'Yachimun';
     case 'F'
-        real_name = 'Nibali';
+        real_name = 'Yachimun';
+%     case 'F'
+%         real_name = 'Nibali';
     case 'Ma'
         real_name = 'Matatabi';
     case 'Sa'
@@ -40,9 +48,8 @@ end
 xpdate = sprintf('%d',xpdate_num);
 cd(real_name)
 cd(save_fold)
-if not(exist([monkeyname xpdate '_' task]))
-    mkdir([monkeyname xpdate '_' task]);
-end
+% if not(exist([monkeyname xpdate '_' task]))
+mkdir([monkeyname xpdate '_' task]);
 cd ../
 disp(['START TO MAKE & SAVE ' monkeyname xpdate 'file[' sprintf('%d',file_num(1)) ',' sprintf('%d',file_num(end)) ']']);
 %EMG set
@@ -84,15 +91,33 @@ switch monkeyname
         a = cummax(selEMGs,'reverse');
         EMG_num = a(1,1);
         make_ECoG = 0;
-    case 'F'%Nibali
-        selEMGs=1:3;%24] ; % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
-        EMGs=cell(3,3) ;
-        EMGs{1,1}= 'FDS';
-        EMGs{2,1}= 'PL';
-        EMGs{3,1}= 'EPL';
+    case 'F' %Yachimun
+        selEMGs=1:12;%24] ; % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
+        EMGs=cell(12,3) ;
+        EMGs{1,1}= 'FDP';
+        EMGs{2,1}= 'FDSprox';
+        EMGs{3,1}= 'FDSdist';
+        EMGs{4,1}= 'FCU';
+        EMGs{5,1}= 'PL';
+        EMGs{6,1}= 'FCR';
+        EMGs{7,1}= 'BRD';
+        EMGs{8,1}= 'ECR';
+        EMGs{9,1}= 'EDCprox';
+        EMGs{10,1}= 'EDCdist';
+        EMGs{11,1}= 'ED23';
+        EMGs{12,1}= 'ECU';
         a = cummax(selEMGs,'reverse');
         EMG_num = a(1,1);
         make_ECoG = 0;
+%     case 'F'%Nibali
+%         selEMGs=1:3;%24] ; % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
+%         EMGs=cell(3,3) ;
+%         EMGs{1,1}= 'FDS';
+%         EMGs{2,1}= 'PL';
+%         EMGs{3,1}= 'EPL';
+%         a = cummax(selEMGs,'reverse');
+%         EMG_num = a(1,1);
+%         make_ECoG = 0;
     case 'Su'%Suruku
         selEMGs=1:12;%24] ; % which EMG channels will be imported and/or filtered (channels are numbered according to the output file, not the AO original channel ID)
         EMGs=cell(12,3) ;
@@ -224,7 +249,7 @@ if make_Timing == 1
                  end
              end
          end
-       case 'F'
+%        case 'F' #for Nibali analysis
            
        otherwise %if reference monkey is not SesekiR or WasaÅAÅiif you don't have to chage to fotocellÅj
          [AllInPort,Timing,Tp,Tp3] = makeEasyTiming(monkeyname,xpdate,file_num,downdata_to,TimeRange_EMG);

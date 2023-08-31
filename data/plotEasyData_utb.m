@@ -1,6 +1,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%{
 % coded by Naoki Uchida
+% modified by Naohito Ota
 % last modification : 2019.05.10
+this code is used in runnningEasyfunc.m
+[role of this function]
+1.
+2.
+3.
+%}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [alignedDataAVE,alignedData,taskRange,AllT,Timing_ave,TIME_W,Res,D] = plotEasyData_utb( monkeyname, xpdate_num, EMGp, ECoGp )
 %PLOTEASYDATA Summary of this function goes here
@@ -9,9 +17,9 @@ function [alignedDataAVE,alignedData,taskRange,AllT,Timing_ave,TIME_W,Res,D] = p
 switch monkeyname
     case 'Wa'
         real_name = 'Wasa';
-    case ['Ya']
+    case 'Ya'
         real_name = 'Yachimun';
-    case ['F']
+    case 'F'
         real_name = 'Yachimun';
     case 'Sa'
         real_name = 'Sakiika';
@@ -30,7 +38,7 @@ xpdate = sprintf('%d',xpdate_num);
 cd(real_name)
 
 cd(['easyData/' monkeyname xpdate '_' task])
-    S = load([monkeyname xpdate '_EasyData.mat']); %load EASY file
+S = load([monkeyname xpdate '_EasyData.mat']); %load EASY file
 cd ../../
 
 % plot mode 1:EMG-ECoG,2:nothing, 3:EMG, 4:ECoG 
@@ -315,7 +323,7 @@ Data = Data_in';
 per1 = pre_per/100;
 per2 = post_per/100;
 % Timing = cast(Timing,'int32');
-TIME_W = round(sum(Timing(:,5)-Timing(:,2) + 1)/s_num);
+TIME_W = round(sum(Timing(:,5)-Timing(:,2) + 1)/s_num); % averarge sample 
 pre1_TIME = round(per1*sum(Timing(:,5)-Timing(:,2) + 1)/s_num);
 post2_TIME = round(per2*sum(Timing(:,5)-Timing(:,2) + 1)/s_num);
 trialData = cell(s_num,3);
