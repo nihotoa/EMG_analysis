@@ -40,8 +40,13 @@ for i = 1:length(fileNames)
     opts = detectImportOptions(filePath);
     opts.DataLines = [start_row,Inf]; %いらない行を消去
     %↓データの代入
-    data = readmatrix(filePath,opts); % csvファイルのデータを読み込み
-    data = data(:,start_col:end); %いらない列を削除
+    try
+        data = readmatrix(filePath,opts); % csvファイルのデータを読み込み
+        data = data(:,start_col:end); %いらない列を削除
+    catch %エラーが発生した場合
+        data = readmatrix(filePath);
+        data = data(4:end, 3:end);
+    end
     %命名規則を守れるように変数名を変更(.とかは変数名に含ませることができないので変更)
     if contains(variable_name,'.') %譁?蟄怜?励↓.繧貞性繧?蝣ｴ蜷?
         variable_name = strrep(variable_name,'.','_');

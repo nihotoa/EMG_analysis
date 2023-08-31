@@ -28,7 +28,7 @@ pre_EMGs{11,1}= 'FDS';
 pre_EMGs{12,1}= 'Biceps';
 pre_EMGs{13,1}= '4L';
 pre_EMGs{14,1}= 'Triceps';
-%EMG list of post1,post2
+%EMG list of post1,post2,post4
 EMGs=cell(16,1) ;
 EMGs{1,1}= 'IOD-1';
 EMGs{2,1}= '2L';
@@ -65,11 +65,11 @@ for ii = 1:length(task_day_list)
             data = data';
             if strcmp(task_day_list{ii}.name, 'pre1') %We have to arrange electrode num
 %                 temp = max(data)';
-                temp = max_sp(data,max_from_above)';
+                temp = max_sp(data, [RawEMG_pathName RawEMG_fileNames{jj}])';
                 [procedure_matrix,electrode_matrix] = arrange_procedure(EMGs, pre_EMGs);
                 yMax_list(1:length(procedure_matrix),jj+length(RawEMG_fileNames)*(ii-1)) = temp(procedure_matrix);
             else
-                temp = max_sp(data,max_from_above)';
+                temp = max_sp(data, [RawEMG_pathName RawEMG_fileNames{jj}])';
                 yMax_list(1:length(max(data)'),jj+length(RawEMG_fileNames)*(ii-1)) = temp;
             end
         catch

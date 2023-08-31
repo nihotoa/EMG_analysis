@@ -27,6 +27,7 @@ CAI_file_num = 1; % CAIのデータ数
 CRAW_file_num = 80; %CRAWのデータ数(なぜか、32→80チャンネルになっていた)
 CLFP_file_num = 80; %CLFPのデータ数(なぜか、32→80チャンネルになっていた)
 exist_EMG = 1; %EMGデータがあるとき1にする
+no_CAI = 1; %正しいCAI信号が取れているかどうか
 manual_trig = 0; %アルファオメガをmanualで操作している場合(筋電とタイミングずれているから追加の処理をしなきゃいけない)※alphaOmegaで筋電計測の場合は，0にすること
 align_trig = 'CTTL_001'; %筋電とアルファオメガの同期に使う信号
 %% code section

@@ -8,7 +8,7 @@ Last Modification: 2023.05.01
 
 【procedure】
 pre: ExtractEMGData.m
-post: makeEMGNMF_Oya or Ohta (交差検証　必要→Oya　しない→Ohta 
+post: (if you want to check RAW or fileteredEMG by plot) ceckRawEMG.m (elseif you want to devide all data into each trial data) devide filteredEMG (else)makeEMGNMF_Oya or Ohta (交差検証　必要→Oya　しない→Ohta) 
 after-post: temp_SynergyAnalysis.m
 ''
 【課題点】
@@ -25,7 +25,8 @@ patient_name = 'patientB';
 use_val.SR = 1000; %筋電のサンプリングレート
 use_val.DSR = 100; %
 use_val.filter_h = 50; %ハイパスのカットオフ周波数
-use_val.filter_l = 5;
+use_val.filter_l = 3;
+use_val.medianfilter = 1; %wheter you apply median filter
 use_val.med_window = 200; %medianフィルタの次数(窓の大きさ)
 task_names = {'pre', 'post'}; %階層構造を指定せずに，特定の文字列を持ってくるために必要
 confirm_filtered_data = 1; %filterされた後の波を主観的に判断するための機能(もっと詳細に知りたい場合はcheckRawEMG.mを回して)
@@ -43,7 +44,12 @@ for task_num = 1:length(task_names)
         load(file_path, 'EMG_data', 'muscle_name');
         use_val.temp_EMG = EMG_data;
         %↓前処理を行うローカル関数を実行
-        [processed_EMG,ex_spike_EMG] = EMG_filter(use_val);
+        switch use_val.medianfilter
+            case 1
+                [processed_EMG,ex_spike_EMG] = EMG_filter(use_val);
+            otherwise
+                processed_EMG = EMG_filter(use_val);
+        end
 
         %セーブデータをまとめる
         Data = processed_EMG;
@@ -57,7 +63,7 @@ for task_num = 1:length(task_names)
                 mkdir(nmf_fold_path)
             end
             Class = ['continuous channel'];
-            SampleRate = use_val.SR;
+            SampleRate = use_val.DSR;
             TimeRange = [0 length(Data)/SampleRate];
             Unit = 'V';
         end
@@ -74,12 +80,20 @@ for task_num = 1:length(task_names)
                 hold on
                 x = linspace(0,1,length(all_timing_data(1,1)+1:all_timing_data(2,1)));
                 y = linspace(0,1,length(RAW_timing_data(1,1)+1:RAW_timing_data(2,1)));
-                subplot(3,1,1)
-                plot(y, use_val.temp_EMG(1,RAW_timing_data(1,1)+1:RAW_timing_data(2,1)),LineWidth=1.3) %rawData
-                subplot(3,1,2)
-                plot(y, ex_spike_EMG(1,RAW_timing_data(1,1)+1:RAW_timing_data(2,1)),LineWidth=1.3) %rawData(spike_removed)
-                subplot(3,1,3)
-                plot(x, Data(1, all_timing_data(1,1)+1:all_timing_data(2,1)),LineWidth=1.7) %filtered_data
+                switch use_val.medianfilter
+                    case 1
+                        subplot(3,1,1)
+                        plot(y, use_val.temp_EMG(1,RAW_timing_data(1,1)+1:RAW_timing_data(2,1)),LineWidth=1.3) %rawData
+                        subplot(3,1,2)
+                        plot(y, ex_spike_EMG(1,RAW_timing_data(1,1)+1:RAW_timing_data(2,1)),LineWidth=1.3) %rawData(spike_removed)
+                        subplot(3,1,3)
+                        plot(x, Data(1, all_timing_data(1,1)+1:all_timing_data(2,1)),LineWidth=1.7) %filtered_data
+                    otherwise
+                        subplot(2,1,1)
+                        plot(y, use_val.temp_EMG(1,RAW_timing_data(1,1)+1:RAW_timing_data(2,1)),LineWidth=1.3) %rawData
+                        subplot(2,1,2)
+                        plot(x, Data(1, all_timing_data(1,1)+1:all_timing_data(2,1)),LineWidth=1.7) %filtered_data
+                end
                 hold off
                 response = input("【処理を実行しますか?('yes'/'no')】");
                 if or(isempty(response),strcmpi(response, 'yes') )
@@ -103,12 +117,14 @@ temp_EMG = use_val.temp_EMG;
 %high_pass
 [B,A] = butter(6, (use_val.filter_h .* 2) ./ use_val.SR, 'high');
 temp_EMG = filtfilt(B,A,temp_EMG);
-%rect
+%rect''
 temp_EMG = abs(temp_EMG);
 
 %madianフィルタによって，spikeを除去
-temp_EMG = medfilt1(temp_EMG,use_val.med_window);
-ex_spike_EMG = temp_EMG;
+if use_val.medianfilter
+    temp_EMG = medfilt1(temp_EMG,use_val.med_window);
+    ex_spike_EMG = temp_EMG;
+end
 
 %パワースペクトルの確認(デバッガーで止めないかぎり見れない)
 PowerSpectrumAnalyze(temp_EMG,use_val.SR, 50)

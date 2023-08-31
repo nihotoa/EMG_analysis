@@ -6,9 +6,11 @@ Last modification: 2023.04.05
 check function to confirm whether RAW_EMG is correct or not
 
 pre: you need to finish all procedure up to filterEMG.m and
-SuccessTiming_func.m
+SuccessTiming_func.m and getMaxY.m
 post nothing
 
+[caution!!!!]
+if you want to use  'fix_lim', please get yMax_list by conducting getMaxY.m
 【課題点】
 条件分岐が冗長すぎる(コードの書き直し)
 fix_limがfilteredの方だと対応していない
@@ -19,12 +21,12 @@ clear;
 patient_name = 'patientB';
 include_task = 1; %何個分のタスクを含めるか
 % task_length = 20; %(task_timingがなくてトリミングできない時)何秒分プロットするか(0の場合は，全てプロットする)
-merge_EMG_figure = 0; %画像をまとめて１枚として作るか，個々の筋電別に作るか
-plot_RAW = 1; %rawデータをプロットするかどうか
-plot_filtered = 0; %filterデータをplotするかどうか
+merge_EMG_figure = 1; %画像をまとめて１枚として作るか，個々の筋電別に作るか
+plot_RAW = 0; %rawデータをプロットするかどうか
+plot_filtered = 1; %filterデータをplotするかどうか
 fix_lim = 1; %Amplitudeのscaleを固定するかどうか
 line_width = 1.7;
-unique_string = '-hp50Hz-rect-lp5Hz-ds100Hz'; %uniqueな文字列
+unique_string = '-hp50Hz-rect-lp3Hz-ds100Hz'; %uniqueな文字列
 
 %もらったcsvファイルを参照してEMGsを作ること(順番も大事)，
 %pre1の時
@@ -44,7 +46,7 @@ unique_string = '-hp50Hz-rect-lp5Hz-ds100Hz'; %uniqueな文字列
 % EMGs{13,1}= '4L';
 % EMGs{14,1}= 'Triceps';
 
-%post1, post2の時
+%post1, post2,post3,post4,post4_rightの時
 EMGs=cell(16,1) ;
 EMGs{1,1}= 'IOD-1';
 EMGs{2,1}= '2L';
@@ -107,16 +109,13 @@ for ii = 1:length(RawEMG_fileNames) %タスクの種類???数
     if merge_EMG_figure
         figure('position', [100, 100, 1280, 720]);
     end
-    for jj = 1:length(filtered_EMG_fileNames) %こ???ループ???の筋肉の??ータが，生??ータのどの電極に対する??
+    for jj = 1:length(filtered_EMG_fileNames) %筋肉ごとにループする
         load([filtered_EMG_pathName filtered_EMG_fileNames{jj}], 'Data','Name');
-        all_filtered_data{jj,1} = Data;
         filtered_data = Data;
         Name = strrep(Name, unique_string, ''); 
-        all_filtered_name{jj,1} = Name;
-        % 
         selected_electrode = use_electrode_num(find(strcmp(EMGs, Name))); %filteredデータに対応する，生データの電極番号を返す
         raw_data = EMG_data(selected_electrode, :);
-        try %timingデータがある時(trimできる)
+        try %timingデータがある時(trimできる)ここで切り取られる範囲が決まる
             load([RawEMG_pathName task_name '_timing.mat'], 'all_timing_data', 'SamplingRate')
             raw_timing_data = all_timing_data * (1000/SamplingRate); %元の筋電のサンプリングレート/SamplingRate           
             raw_data = raw_data(1, raw_timing_data(1,1):raw_timing_data(2,include_task)); %トリミング
@@ -140,6 +139,7 @@ for ii = 1:length(RawEMG_fileNames) %タスクの種類???数
                 plot(y, filtered_data, 'LineWidth',line_width);
             end
             %decorate
+            grid on;
             title(Name)
             xlabel('Time[%]')
             ylabel('Amplitude[V]')

@@ -7,20 +7,18 @@ pre: makeEMGNMF_ohta
 post: nothing
 閾値を手動で切るためのコードを作成する
 【注意点】
-・コード中でEMG_filterというlocal関数がコメントアウトされているが，
-　これは，フィルタリングした後の波が思ったより高周波だったので，後付けでローパスかけようとしたもの
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
 patient_name = 'patientB';
 day_names = {'pre', 'post'};
-def_syn_num = 'auto';%'auto' / 'manual' %閾値から決める場合は'auto', 自分で決める場合はmanual 
+def_syn_num = 'manual';%'auto' / 'manual' %閾値から決める場合は'auto', 自分で決める場合はmanual 
 r2_threshold = 0.8;
 trim_task = 1; %synergy_Hをトリミングするかどうか
 trim_type = 'average'; % 'average'/'stack'
 use_pc = 'mac'; % 'mac'/'windows'
-normalize_sampling = 1000; %時間正規化するときの分解能(1000だったら，1000点プロット)
+normalize_sampling = 350; %時間正規化するときの分解能(1000だったら，1000点プロット)
 % filter_l = 2;
 %% code section
 % standard.matとt_~standard.matを選択
@@ -40,13 +38,19 @@ default_path = use_val.pathName;
 for task_num = 1:length(task_names)
     use_val.pathName = strrep(default_path,task_names{1}, task_names{task_num});
     % r2関連の処理
-    if contains(fileNames{1},'t_')
-        r2_fileName = fileNames{2};
-        synergy_fileName = fileNames{1};
-    else
-        r2_fileName = fileNames{1};
-        synergy_fileName = fileNames{2};
+    if task_num == 1
+        if contains(fileNames{1},'t_')
+            default_r2_fileName = fileNames{2};
+            default_synergy_filename = fileNames{1};
+        else 
+            default_r2_fileName = fileNames{1};
+            default_synergy_filename = fileNames{2};
+        end
     end
+    %loadするfile名の変更
+    r2_fileName = strrep(default_r2_fileName, task_names{1}, task_names{task_num});
+    synergy_fileName = strrep(default_synergy_filename, task_names{1}, task_names{task_num});
+
     load([use_val.pathName r2_fileName], 'r2', 'shuffle', 'TargetName');
     figure('position', [100, 100, 800, 800]);
     plot(r2, 'LineWidth',1.5)
@@ -173,22 +177,6 @@ for task_num = 1:length(task_names)
     %動作のプロット(skeltonを作成する & 回内と回外がないかを確認する)
 end
 %% decide local function
-%{
-function [processed_EMG] = EMG_filter(filter_l, SamplingRate, temp_EMG)
-%high_pass
-% [B,A] = butter(6, (filter_h .* 2) ./ SamplingRate, 'high');
-% temp_EMG = temp_EMG;
-% temp_EMG = filtfilt(B,A,temp_EMG);
-%low_pass(500Hz)
-% [B,A] = butter(6, (500 .* 2) ./ use_val.SamplingRate, 'low');
-% temp_EMG = filtfilt(B,A,temp_EMG);
-
-%smoothing(平滑化)→整流した後にタスクを重ね合わて、その後に平均をとって、その後にこの処理をするべき
-[B,A] = butter(6, (filter_l .* 2) ./ SamplingRate, 'low');
-processed_EMG = filtfilt(B,A,temp_EMG);
-end
-%}
-
 function [use_val] = make_syn_fold(use_val, ref_syn_num)
 input_param_num = nargin;
 switch input_param_num
