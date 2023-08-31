@@ -1,18 +1,53 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%{
 % coded by Naoki Uchida
-% last modification : 2021.03.23
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% modified by Naohito Ota
+
+[your operation]
+1. Please complete the steps up to pre-procedure (refer to below ([procedure]))
+2. Go to the directory named 'data' (directory where this code exists)
+3. Change some parameters (please refer to 'set param' section)
+4. Please run this code & select data by following guidance (which is displayed in command window after Running this code)
+
+[role of this code]
+the role of this code is to perform various processing(trimming for each task-trials, filtering, etc...) to raw EMG data
+& save these data
+
+[caution!!]
+Please set current directry as 'data'
+Sometimes the function 'uigetfile'(this function is used in this code)is not executed and an error occurs
+-> please reboot MATLAB
+
+[Saved data location]
+location: data -> Yachimun -> easyData -> ~_standard -> here!!
+file_name: ~_EasyData.mat -> timing data & EMGdata (muscle_name: 'EMGs', EMG: 'AllData_EMG', taiming_data: 'Tp')
+           ~_CTcheckData.mat -> about the data of cross-talk of EMG
+           ~_CTR.mat -> about the data of cross-talk of EMG
+           ~_alignedData_uchida -> 
+
+(one more file!!)
+location: data -> Yachimun -> easyData -> P-DATA -> here!! 
+file_name: ~_Pdata.mat -> contains some data for synergy analysis (timing_data, trimmed_EMG, etc...)
+           ~_PdataTrigEMG.mat -> not used 
+           ~_PdataTrigEMG_NDfilt.mat -> not used
+           ~_PdataTrigSyn.mat -> not used
+
+[procedure]
+pre: SaveFileInfo.m
+post: plotTarget.m
+%}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear 
 %% set param
-% which save pttern?
-saveP = 1;
-saveE = 1;
-saveS = 1;
-saveE_filt = 1;
+% which save pttern?(if you set all of them to 1, there is basically no problem.)
+saveP = 1; 
+saveE = 1;  
+saveS = 1; 
+saveE_filt = 1; 
 
 % which monkey?
 %realname = 'Wasa';
-realname = 'Yachimun';
+realname = 'Yachimun'; 
 % realname = 'SesekiR';
 % realname = 'Matatabi';
 % realname = 'Nibali';
@@ -23,7 +58,7 @@ realname = 'Yachimun';
 global task;
 task = 'standard';
 save_fold = 'easyData';
-disp('Åyget target files(select ~_standard.mat (location: monkey_name -> easyData ->) which contain file information, e.g. file numbers)Åz')
+disp(['Åyget target files(select all ~_standard.mat of all dates you want to analyze (location: ' realname ' -> easyData ->) which contain file information, e.g. file numbers)Åz'])
 [Allfiles_S,path] = uigetfile('*.mat',...
                      'Select One or More Files', ...
                      'MultiSelect', 'on');
@@ -46,7 +81,7 @@ for i = 1:S(2)
     file_num = fileInfo.file_num;
     
     % if successfully done, CTcheckData.mat & EasyData.mat is saved in '~_standard' fold 
-    [EMGs,ECoGs,Tp,Tp3] = makeEasyData_all(monkeyname,xpdate,file_num,save_fold);
+    [EMGs,ECoGs,Tp,Tp3] = makeEasyData_all(monkeyname,xpdate,file_num,save_fold); 
     [Yave,Y3ave] = CTcheck(monkeyname,xpdate,save_fold,1);
     [alignedDataAVE,alignedData_all,taskRange,AllT,Timing_ave,TIME_W,Res,D] = plotEasyData_utb(monkeyname, xpdate, 1, 0);
     
@@ -68,6 +103,7 @@ for i = 1:S(2)
     end
     cd([realname '/easyData/P-DATA'])
     if saveP == 1
+        % dataset for synergy analysis 
         save([monkeyname sprintf('%d',xpdate) '_Pdata.mat'], 'monkeyname', 'xpdate', 'file_num','EMGs','ECoGs',...
                                                'Tp','Tp3',... 
                                                'Yave','Y3ave',...%'Yave':CT results of RAW data,'Y3ave':CT results of 3rd differential data
