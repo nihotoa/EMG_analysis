@@ -1,11 +1,8 @@
 function [alignedDATA, slct]=AlignDatasets(DATA,tarLength,direction)
-% switch direction
-%    case 'row'%-----------
-%       dim = 2;
-%    case 'column'%|||||||||||
-%       dim = 1;
-% end
-
+%{
+explanation: change the construction of data & resample data(adjast to 'tarLength')
+about paremeter 'slct': this is not used. (I don't know why this parameter is defined)
+%}
 if iscell(DATA)
    CELLsize = size(DATA);
    alignedDATA = cell(length(DATA),1);
@@ -21,18 +18,15 @@ else
 end
 
 end
+%% define local function
 function [alignedDATA, slct]=AlignMatrixData(DATA,tarLength,direction)
-% DATAsize = size(DATA);
-% alignedDATA = zeros(tarLength, DATAsize(3-dim));
 slct.val = [0 0 0];
 slct.note = 'val = [''equal'', ''data < tar'', ''data > tar'']';
 % Transpose DATA matrix only 'row' direction data
 switch direction
-   case 'row'%-----------
+   case 'row'
       DATA = DATA';
-%       dim = 2;
-   case 'column'%|||||||||||
-%       dim = 1;
+   case 'column'
 end
 if length(DATA(:,1)) == tarLength
    slct.val(1) = slct.val(1)+1;
@@ -46,8 +40,8 @@ else
 end
 % RE-Transpose alignedDATA matrix only 'row' direction data
 switch direction
-   case 'row'%-----------
+   case 'row'
       alignedDATA = alignedDATA';
-   case 'column'%|||||||||||
+   case 'column'
 end
 end
