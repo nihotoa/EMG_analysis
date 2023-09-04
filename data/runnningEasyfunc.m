@@ -14,8 +14,7 @@ the role of this code is to perform various processing(trimming for each task-tr
 & save these data
 
 [caution!!]
-Please set current directry as 'data'
-Sometimes the function 'uigetfile'(this function is used in this code)is not executed and an error occurs
+Sometimes the function 'uigetfile' is not executed and an error occurs
 -> please reboot MATLAB
 
 [Saved data location]
