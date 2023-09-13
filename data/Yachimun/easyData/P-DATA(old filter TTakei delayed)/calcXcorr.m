@@ -58,7 +58,7 @@ switch Tar
       ResE = EachXcorr(TarN);
    case 'Synergy'
       TarN = 4;            %Synergy num
-      used_muscle = {'FDP';'FDSdist';'FCU';'PL';'FCR';'BRD';'ECR';'EDCdist';'ED23';'ECU'};
+      used_muscle = {'FDP';'FDSdist'; 'FDSprox';'FCU';'PL';'FCR';'BRD';'ECR';'EDCdist';'EDCprox';'ED23';'ECU'};
 %       s_order = [2 1 4 3];
       [D,conD,EMGs] = LoadCorrData(Tar,used_muscle);
       [~,selected_day_num] = size(D.syn1);

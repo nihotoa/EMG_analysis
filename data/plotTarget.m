@@ -36,8 +36,8 @@ clear
 %Ptrig2 : Averaged dataset on each session -50:50%(triggered at hold_on2)
 %Ptrig3 : Averaged dataset on each session -25:105%(triggered at hold_on1)
 
-realname = 'Yachimun'; %monkey name
-monkeyname = 'F'; %prefix of Raw data
+realname = 'SesekiL'; %monkey name
+monkeyname = 'Se'; %prefix of Raw data
 Tar = 'Synergy'; %the data which you want to plot -> 'EMG' or 'Synergy'
 save_fold = 'easyData';     % you don't need to change
 plot_fig = 0;               % wtherer you want to plot figures
@@ -50,8 +50,8 @@ CTC = 0;                    %plot Cross Talk(I don't confirm whether I can use t
 nomalizeAmp = 0;            %normalize Amplitude 
 YL = Inf;                   %(if nomalize Amp == 0) ylim of graph
 save_xcorr_data = 1;        %save data to use of plot x_corr
-nmf_fold_name = 'new_nmf_result'; %(if you want to plot synergy data) folder name of nmf_fold
-synergy_order = [3, 1, 2, 4];  %(pre1,2,3,4)‚É‘Î‰ž‚·‚épost‚Ìsynergy 
+nmf_fold_name = 'nmf_result'; %(if you want to plot synergy data) folder name of nmf_fold
+synergy_order = [3, 1, 4, 2];  %(pre1,2,3,4)‚É‘Î‰ž‚·‚épost‚Ìsynergy 
 %% code section
 switch monkeyname
    case 'F'
@@ -359,7 +359,7 @@ if save_data==1
         TrigData_Each.T4.data{j} = Pall.plotData_sel{j}(:,cutWin4(1)+1:cutWin4(2));
     end
     %make end-control data (4days) Only Yachimun
-    if (save_end_control==1)
+    if save_end_control==1
         TrigData_Each.T1.AVEend4 = (TrigData_Each.T1.data{S(2)} + TrigData_Each.T1.data{S(2)-1} + TrigData_Each.T1.data{S(2)-2} + TrigData_Each.T1.data{S(2)-3})./4;
         TrigData_Each.T2.AVEend4 = (TrigData_Each.T2.data{S(2)} + TrigData_Each.T2.data{S(2)-1} + TrigData_Each.T2.data{S(2)-2} + TrigData_Each.T2.data{S(2)-3})./4;
         TrigData_Each.T3.AVEend4 = (TrigData_Each.T3.data{S(2)} + TrigData_Each.T3.data{S(2)-1} + TrigData_Each.T3.data{S(2)-2} + TrigData_Each.T3.data{S(2)-3})./4;
@@ -378,7 +378,7 @@ if save_data==1
              TrigData_Each.T4.AVEPre4 = (TrigData_Each.T4.data{AVEPre4List(1)} + TrigData_Each.T4.data{AVEPre4List(2)} + TrigData_Each.T4.data{AVEPre4List(3)} + TrigData_Each.T4.data{AVEPre4List(4)})./4;
              TrigData_Each.AVEPre4List = AVEPre4List;
         end
-        if S(2)==50
+        if or(S(2)==50, S(2)==49)
              TrigData_Each.T1.AVEPre4 = (TrigData_Each.T1.data{AVEPre4List(1)} + TrigData_Each.T1.data{AVEPre4List(2)} + TrigData_Each.T1.data{AVEPre4List(3)} + TrigData_Each.T1.data{AVEPre4List(4)})./4;
              TrigData_Each.T2.AVEPre4 = (TrigData_Each.T2.data{AVEPre4List(1)} + TrigData_Each.T2.data{AVEPre4List(2)} + TrigData_Each.T2.data{AVEPre4List(3)} + TrigData_Each.T2.data{AVEPre4List(4)})./4;
              TrigData_Each.T3.AVEPre4 = (TrigData_Each.T3.data{AVEPre4List(1)} + TrigData_Each.T3.data{AVEPre4List(2)} + TrigData_Each.T3.data{AVEPre4List(3)} + TrigData_Each.T3.data{AVEPre4List(4)})./4;
@@ -386,7 +386,7 @@ if save_data==1
              TrigData_Each.AVEPre4List = AVEPre4List;
         end
         
-        if S(2)==28
+        if or(S(2)==28, S(2)==27)
              TrigData_Each.T1.AVEPre4 = (TrigData_Each.T1.data{AVEPre4List(1)} + TrigData_Each.T1.data{AVEPre4List(2)} + TrigData_Each.T1.data{AVEPre4List(3)})./3;
              TrigData_Each.T2.AVEPre4 = (TrigData_Each.T2.data{AVEPre4List(1)} + TrigData_Each.T2.data{AVEPre4List(2)} + TrigData_Each.T2.data{AVEPre4List(3)})./3;
              TrigData_Each.T3.AVEPre4 = (TrigData_Each.T3.data{AVEPre4List(1)} + TrigData_Each.T3.data{AVEPre4List(2)} + TrigData_Each.T3.data{AVEPre4List(3)})./3;
@@ -602,7 +602,7 @@ end
 
 cd ../../../
 if save_xcorr_data == 1
-    save_fold = 'easyData/P-DATA(TTakei-filter)/'; % location of the file saved
+    save_fold = 'easyData/P-DATA(old filter TTakei delayed)/'; % location of the file saved
     AllTAVE = Pall.AllT_AVE;
     plotData_sel = Pall.plotData_sel;
     if not(exist(fullfile(pwd, save_fold)))
