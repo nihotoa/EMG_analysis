@@ -1,34 +1,43 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
-    カレントディレクトリをnew_nmf_resultにして実行すること    
-    【function】
-    save data which is related in displaying temporal synergy
-    saved location is new_nmf_result -> synData -> (ex.)YaSyn4170630_Pdata.mat
-    【procedure】
-    pre_operate: dispNMF_W.m
-    post_operate: plotTarget.m
-    【caution!!!!】
-    please change group_num!!!!!!!
-    (変数group_numの値を適宜変更して!!!!)
-    【超大事!!!!!!!】
-    resampleのtoolboxを入れていないとエラー吐くので注意(signal processing toolboxってやつ)
-    codeにpath通してないとエラー吐く
+カレントディレクトリをnew_nmf_resultにして実行すること    
+【function】
+save data which is related in displaying temporal synergy
+saved location is new_nmf_result -> synData -> (ex.)YaSyn4170630_Pdata.mat
+【procedure】
+pre_operate: dispNMF_W.m
+post_operate: plotTarget.m
+【caution!!!!】
+please change group_num!!!!!!!
+(変数group_numの値を適宜変更して!!!!)
+【超大事!!!!!!!】
+resampleのtoolboxを入れていないとエラー吐くので注意(signal processing toolboxってやつ)
+codeにpath通してないとエラー吐く
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [Result,Allfiles] = MakeDataForPlot_H_utb()
-%% make data for corr
+%% set param
 monkeyname = 'Se';
-%task = 'standard';
-
+synergy_type = 'post'; %'pre' / 'post'
 group_num = 2;
 Tsynergy = 4;
-disp('please select all "_standard.mat"(SesekiL -> easyData ->)') %(only use name part (no use contents))
-Allfiles_S = uigetfile(['*' 'standard.mat'],...
-                     'Select One or More Files', ...
-                     'MultiSelect', 'on');
+
+%% code section
+data_folders = dir(pwd);
+folderList = {data_folders([data_folders.isdir]).name};
+Allfiles_S = folderList(startsWith(folderList, monkeyname));
+switch synergy_type
+    case 'pre'
+        Allfiles_S = Allfiles_S(1:3);
+    case 'post'
+        Allfiles_S = Allfiles_S(4:end);
+end
+
 S = size(Allfiles_S);
-Allfiles = strrep(Allfiles_S,'_standard.mat','');
+Allfiles = strrep(Allfiles_S,'_standard','');
 AllDays = strrep(Allfiles,monkeyname,'');
+
+
 
 switch group_num
    case 1%control (FDP)
@@ -82,6 +91,9 @@ D.trig3_per = [50 50];
 D.trig4_per = [50 50];
 D.task_per = [25,105];
 for SS = 1:S(2) %session loop
+   if not(exist(fullfile(pwd, ['../easyData/' Allfiles{SS} '_standard'])))
+       mkdir(['../easyData/' Allfiles{SS} '_standard'])
+   end
    cd(['../easyData/' Allfiles{SS} '_standard'])
    Timing = load([Allfiles{SS} '_EasyData.mat'],'Tp','Tp3','SampleRate');
    cd ../../nmf_result
@@ -90,8 +102,12 @@ for SS = 1:S(2) %session loop
    pre_per = 50; % How long do you want to see the signals before hold_on 1 starts.
    post_per = 50; % How long do you want to see the signals after hold_off 2 starts.
    
-   %↓alignedData:タスクごとの、時間正規化した時間シナジー  alignedDataAVE:時間正規化した時間シナジーの平均 All_T:トリミングしたサンプル数(正規化済み)
-   [alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(allH{SS}',[], tim, ts(1),pre_per,post_per, Tsynergy);
+   try
+       %↓alignedData:タスクごとの、時間正規化した時間シナジー  alignedDataAVE:時間正規化した時間シナジーの平均 All_T:トリミングしたサンプル数(正規化済み)
+       [alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(allH{SS}',[], tim, ts(1),pre_per,post_per, Tsynergy);
+   catch
+       continue
+   end
    taskRange = [-1*pre_per, 100+post_per];
     %↓時間シナジーをトリミングして、保存する(3つのタイミング付近でトリミングしている(task開始,?,?)),各日のトリミングデータと、全日の平均データが、それぞれのタイミング分だけ保存されている
    [Res] = alignDataEX(alignedData, tim, D, pre_per,post_per,TIME_W, Tsynergy);

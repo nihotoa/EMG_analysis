@@ -6,6 +6,9 @@ offset‚Å‚Í‚È‚­offset2‚ðŽg—p
 yNibali‰ðÍ‚Ìê‡z
 pre : untitled.m
 post : makefold
+y‚â‚¿‚Þ‚ñ‰ðÍ‚Ìê‡z
+pre:fitlerBat_SynNMFPre.m
+post: (MoveFIle.m) -> SYNERGYPLOT
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

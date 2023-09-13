@@ -10,49 +10,28 @@ post_operate:SYNERGYPLOT.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-reference_dir = 'dist-dist';
-dir_group = dir('Ya*');
+reference_dir = 'data_fold_(12_muscle)';
+prefix_name = 'Ya';
+saved_folder_prefix = 'F';
 first_day = 170516;
 last_day = 170929;
-remove_day = [170403 170510 170529 170605 170606 170607 170608 170612 170613 170614 170615 170616 170619 170620 170621 170622 170623 170627 170705 170801 170816];
-muscle_num = 10;
-
-
 %% code section
-count = 1; 
-for ii = 1:length(dir_group)
-    fold_name = dir_group(ii).name;
-    if contains(fold_name,'_standard_filtNO5')
-        continue
+nmf_files = dir(fullfile(pwd, reference_dir, [prefix_name '*']));
+des_folders = dir(pwd);
+des_folders = {des_folders([des_folders.isdir]).name};
+des_folders = des_folders(startsWith(des_folders, saved_folder_prefix));
+for ii = 1:length(nmf_files)
+    file_name = nmf_files(ii).name;
+    numParts = regexp(file_name, '\d+', 'match');
+    day_name = numParts{1};
+    if any(contains(des_folders, day_name)) %その日付のフォルダがセーブ先フォルダとして存在している場合
+        des_folders_idx = find(contains(des_folders, day_name));
+        des_folders_path = fullfile(pwd, des_folders{des_folders_idx});
+        file_path = fullfile(pwd, reference_dir, file_name);
+        movefile(file_path, des_folders_path);
     else
-        experiment_day = str2double(extractAfter(fold_name,2));
-        day_list(count,1) = experiment_day; 
-        count = count + 1;
-    end   
-end
-
-day_list = setdiff(day_list,remove_day);
-day_list = rmmissing(day_list);
-day_list = day_list(and(day_list >= first_day, day_list <= last_day));
-
-% 全てのデータが格納されているフォルダへ移動(makeEMGNMFの保存先ディレクトリ)
-cd(reference_dir)
-%念の為、データを複製しておく
-for ii = 1:length(day_list)
-    copyfile(['Ya' num2str(day_list(ii)) '.mat'],['Ya' num2str(day_list(ii)) '_' num2str(muscle_num) '.mat'])
-    copyfile(['t_Ya' num2str(day_list(ii)) '.mat'],['Ya' num2str(day_list(ii)) '_' num2str(muscle_num) '_nmf.mat'])
-end
-%↓データを1階層上に移す
-for ii = 1:length(day_list)
-    movefile(['Ya' num2str(day_list(ii)) '_' num2str(muscle_num) '.mat'],'../');
-    movefile(['Ya' num2str(day_list(ii)) '_' num2str(muscle_num) '_nmf.mat'],'../');
-end
-cd ../
-
-%データを指定した下の階層に移す
-for ii = 1:length(day_list)
-    movefile(['Ya' num2str(day_list(ii)) '_' num2str(muscle_num) '.mat'],['Ya' num2str(day_list(ii))]);
-    movefile(['Ya' num2str(day_list(ii)) '_' num2str(muscle_num) '_nmf.mat'],['Ya' num2str(day_list(ii))]);
+        continue
+    end
 end
 
 

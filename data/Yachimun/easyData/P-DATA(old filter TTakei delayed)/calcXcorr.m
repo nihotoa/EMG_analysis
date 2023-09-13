@@ -32,7 +32,7 @@ Tar = 'Synergy';           %'EMG','Synergy'
 save_data = 1;
 pre_data_num = 4;
 %preとpostのシナジー番号を合わせるもの,(これをしないと,x_corrの値が混じってしまう)
-synergy_order = [4 2 1 3];
+synergy_order = [3 1 2 4];
 timing_num = 4; %EachXcorrで計算するタイミングデータの個数(ex.)タイミングがT1~T4まであった場合は4にする
 
 

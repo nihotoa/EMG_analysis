@@ -1,11 +1,9 @@
 function plotSynergyAll_uchida(fold_name,emg_group,pcNum,plk)
 %% set para & get nmf result
-% fold_name = 'Wa180928';
-% 
-% emg_group = 1;
 task = 'standard';
 
-switch emg_group
+
+switch emg_group  %èáî‘éÁÇÁÇ»Ç¢Ç∆É_ÉÅ(ÇªÇÍÇ©èëÇ´ä∑Ç¶ÇÈTargetNameÇ©ÇÁEMGsÇçÏÇÈÇÊÇ§Ç…èëÇ´ä∑Ç¶ÇÈ)
     case 1%control (FDP)
         EMG_num = 7;
         EMGs = {'BRD_1';'BRD_2';'ECR';'EDC';'FCR';'FCU';'FDPr'};
@@ -27,18 +25,26 @@ switch emg_group
     case 7 %dist-prox
         EMG_num = 10;
         EMGs = {'BRD';'ECR';'ECU';'ED45';'EDCdist';'FCR';'FCU';'FDP';'FDSprox';'PL'};
+    case 8 %all
+        EMG_num = 12;
+        EMGs = {'BRD';'ECR';'ECU';'ED45';'EDCdist';'EDCprox';'FCR';'FCU';'FDP';'FDSdist';'FDSprox';'PL'};
 end
 
 save_fold = 'new_nmf_result';
 cd(save_fold)
-%cd([fold_name '_' task])
-cd(fold_name)
+cd([fold_name '_' task])
+% cd(fold_name)
 % % everyday nomalization
 % load([fold_name '_' task '_' sprintf('%02d',EMG_num) '.mat']);
 % load([fold_name '_' task '_' sprintf('%02d',EMG_num) '_nmf.mat']);
-load([fold_name '_' sprintf('%02d',EMG_num) '.mat']);
-load([fold_name '_' sprintf('%02d',EMG_num) '_nmf.mat']);
-
+try
+    load([fold_name '_' sprintf('%02d',EMG_num) '.mat']);
+    load([fold_name '_' sprintf('%02d',EMG_num) '_nmf.mat']);
+catch
+    temp_fold_name = strrep(fold_name, 'F', 'Ya');
+    load([temp_fold_name '_' sprintf('%02d',EMG_num) '.mat']);
+    load([temp_fold_name '_' sprintf('%02d',EMG_num) '_nmf.mat']);
+end
 
 % fixed nomalization
 % load([fold_name '_' sprintf('%02d',EMG_num) 'fix.mat']);
@@ -104,8 +110,15 @@ for i = 1:pcNum
     title([fold_name ' W pcNum = ' sprintf('%d',pcNum)]);
 end
 if save_data == 1
-    cd([fold_name '_syn_result_' sprintf('%02d',EMG_num)]);
-    cd ([fold_name '_W'])
+    save_fig_fold = [fold_name '_syn_result_' sprintf('%02d',EMG_num)];
+    if not(exist(fullfile(pwd, save_fig_fold)))
+        mkdir(save_fig_fold)
+    end
+    cd(save_fig_fold);
+    if not(exist(fullfile(pwd, [fold_name '_W'])))
+        mkdir([fold_name '_W'])
+    end
+    cd([fold_name '_W'])
     comment = 'this data will be used for dispW';
     save([fold_name '_aveW_' sprintf('%d',pcNum) '.mat'], 'aveW','k','pcNum','fold_name','comment');
     cd ../../
@@ -170,8 +183,8 @@ cd ../../easyData
 cd([fold_name '_' task_base])
 load([fold_name '_EasyData.mat'],'Tp','SampleRate');
 cd ../../
-% cd([save_fold '/' fold_name '_' task])
-cd([save_fold '/' fold_name])
+cd([save_fold '/' fold_name '_' task])
+% cd([save_fold '/' fold_name])
 
 SUC_Timing_A = floor(Tp.*(100/SampleRate));
 SUC_num = length(Tp(:,1))-1;
@@ -272,7 +285,10 @@ if plk == 1
     elseif plk == 3
         if save_data == 1
             cd([fold_name '_syn_result_' sprintf('%02d',EMG_num)]);
-            cd ([fold_name '_H'])
+            if not(exist(fullfile(pwd, [fold_name '_H'])))
+                mkdir([fold_name '_H'])
+            end
+            cd([fold_name '_H'])
             aveH = ave;
             comment = 'this data will be used for dispH';
             save([fold_name '_aveH3_' sprintf('%d',pcNum) '.mat'], 'aveH','k','pcNum','fold_name','comment');
@@ -308,7 +324,11 @@ if plk == 1
 
         %% plot r2
         f5 = figure;
-        load([fold_name '_' sprintf('%02d',EMG_num) '.mat']);
+        try
+            load([fold_name '_' sprintf('%02d',EMG_num) '.mat']);
+        catch
+            load([temp_fold_name '_' sprintf('%02d',EMG_num) '.mat']);
+        end
         for i= 1:kf
             plot(test.r2(:,i));
             ylim([0 1]);
@@ -322,6 +342,9 @@ if plk == 1
 
         if save_fig_r2 ==1
             cd([fold_name '_syn_result_' sprintf('%02d',EMG_num)]);
+            if not(exist(fullfile(pwd, [fold_name '_r2'])))
+                mkdir([fold_name '_r2'])
+            end
             cd ([fold_name '_r2'])
             saveas(gcf,[fold_name ' R2 pcNum = ' sprintf('%d',pcNum) '.png']);
             close all;

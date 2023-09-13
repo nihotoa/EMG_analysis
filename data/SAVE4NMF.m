@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
 please use this code with setting current dir as 'Data'
 筋シナジー解析のための一番最初のステップ
@@ -10,14 +10,18 @@ muscle data as '(uv).mat'
 【procedure】
 pre:SaveFileInfo
 post:filterBat_SynNMFPre.m
+
+【改善点】
+ローカル関数の中で変数が定義されている -> 最初に定義して, それをstructとしてまとめておいて，入力引数として使用する
 %}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% set param
 real_name = 'Yachimun';
 task = 'standard';
+
 %% code section
 %read standard file
-disp('【Please select Yachimun -> easyData -> ~_standart.mat】');
+disp(['Please select all standard.mat(location:' real_name ' -> easyData -> ~_standart.mat)']);
 TarSessions = uigetfile('*.mat',...
                      'Select One or More Files', ...
                      'MultiSelect', 'on');
@@ -174,17 +178,14 @@ ECoGs = {'CRAW_001';'CRAW_002';'CRAW_003';'CRAW_004';'CRAW_005';'CRAW_006';'CRAW
            'CRAW_061';'CRAW_062';'CRAW_063';'CRAW_064'};
 ECoG_num = length(ECoGs);
 
+save_fold = 'new_nmf_result';
+save_fold_ECoG = 'ECoGData';
 downsample = 1;
 downdata_to =5000;
-
-%data
-save_fold = 'nmf_result';
-save_fold_ECoG = 'ECoGData';
 make_EMG = 1;
 save_EMG = 1;
 make_ECoG = 0;
 save_ECoG = 0;
-
 %% create EMG All Data matrix
 if make_EMG == 1
     AllData_EMG_sel = cell(length(file_num),1);
@@ -235,7 +236,8 @@ if save_EMG == 1
     if exist('arm')
        cd([monkeyname xpdate arm])
     else
-       if not(exist([monkeyname xpdate '_' task]))
+       fullpath = fullfile(pwd, [monkeyname xpdate '_' task]);
+       if not(exist(fullpath))
            mkdir([monkeyname xpdate '_' task])
        end
        cd([monkeyname xpdate '_' task])

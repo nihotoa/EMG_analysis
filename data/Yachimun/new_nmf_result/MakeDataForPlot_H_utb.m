@@ -6,7 +6,9 @@
     MakeDataForPLotとの相違点 → トリミングするタイミングが一つ増えた
     こちらの関数も同様に、一つしかシナジーをプロットしない。デフォルトでプロットしない設定になっていた。図をセーブする記述が見られない
     ことから、大事なのはデータの保存であって、図は別の関数で保存されていると考えられる(PlotTarget.m?)
-    
+     
+    [role of this code]
+    synDataの中に,H_syenrgyのplotに必要なデータを保存する(figureをプロットして保存する関数ではないことに注意する)
     %やること:MakeDataForPLotとの相違点を明確にする
     【相違点】
     orderSyn_second.matを参照していない→これなしでできる！(このファイルの機能はYa170630to170929_45_4.matで補っている(変数OD))
@@ -26,10 +28,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [Result,Allfiles] = MakeDataForPlot_H_utb()
 %% make data for corr
-monkeyname = 'Ya';
+monkeyname = 'F';
 %task = 'standard';
-
-group_num = 2;
+group_num = 1;
 Tsynergy = 4;
 disp('please select all "_standard.mat"(Yachimun -> easyData ->)') %(only use name part (no use contents))
 Allfiles_S = uigetfile(['*' 'standard.mat'],...
@@ -61,7 +62,10 @@ cd(pat)
 OD = load(fName);
 cd ../../
 for J =1:S(2)     %session loop
-   cd([Allfiles{J} '/' Allfiles{J} '_syn_result_' sprintf('%02d',EMG_num) '/' Allfiles{J} '_H/'])
+   if not(exist(fullfile(pwd, [Allfiles{J} '_standard/' Allfiles{J} '_syn_result_' sprintf('%02d',EMG_num) '/' Allfiles{J} '_H/'])))
+       mkdir([Allfiles{J} '_standard/' Allfiles{J} '_syn_result_' sprintf('%02d',EMG_num) '/' Allfiles{J} '_H/'])
+   end
+   cd([Allfiles{J} '_standard/' Allfiles{J} '_syn_result_' sprintf('%02d',EMG_num) '/' Allfiles{J} '_H/'])
    K = load([Allfiles{J} '_aveH3_' sprintf('%d',Tsynergy) '.mat'],'k');
    cd ../../
 %    TimSUC = load([Allfiles{J} '_SUC_Timing.mat']);
@@ -156,7 +160,9 @@ for SS = 1:S(2) %session loop
        ResAVE.tData4_AVE = Res.tData4_AVE;
        ResAVE.tDataTask_AVE = Res.tDataTask_AVE;
        xpdate = AllDays(SS);
-       mkdir 'synData';
+       if not(exist(fullfile(pwd, 'synData')))
+           mkdir 'synData';
+       end
        cd 'synData'
        save([monkeyname 'Syn' sprintf('%d',Tsynergy) AllDays{SS} '_Pdata.mat'], 'monkeyname','xpdate','D',...
                                                          'alignedDataAVE','ResAVE',...

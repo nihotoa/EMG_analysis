@@ -1,3 +1,10 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%{
+[proedure]
+pre: makeEMGNMF_btcOya
+post:dipsNMF_W
+%}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% set param
 monkeyname = 'Se';
 %28
@@ -33,8 +40,8 @@ days = [...%pre-surgery
         200326;...
         200330;...
          ];
-     
-     Ld = length(days);
+%% code section      
+Ld = length(days);
      
 for ii = 1:Ld
     fold_name = [monkeyname sprintf('%d',days(ii))];

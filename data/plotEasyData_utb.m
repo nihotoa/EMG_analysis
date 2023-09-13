@@ -26,8 +26,8 @@ switch monkeyname
     case 'Su'
         real_name = 'Suruku';
     case 'Se'
-        %real_name = 'SesekiL';
-        real_name = 'SesekiR';
+        real_name = 'SesekiL';
+%         real_name = 'SesekiR';
         
     case 'Ma'
         real_name = 'Matatabi';
