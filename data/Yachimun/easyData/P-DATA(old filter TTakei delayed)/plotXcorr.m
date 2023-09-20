@@ -15,6 +15,7 @@ AllDays,dayX,visual_synは適宜変更すること
 2,4をプロットとする時と1,3をプロットする時で名前が一緒になってしまうので分ける
 どの変数変えればいいのか分かりずらい
 AllDaysとdayXを変えなきゃいけないのがめんどくさい
+RexultXcorrのなかにTarがあるため，上書きされてしまう.(最初に定義したTarの意味がなくなってしまう)
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
@@ -22,8 +23,21 @@ clear;
 Tar = 'Synergy';
 switch Tar
    case 'EMG'
-      load('ResultXcorr_80.mat');
-      load('ResultXcorr_Each_EMG_Range2.mat');      
+%       load('ResultXcorr_80.mat');
+%       load('ResultXcorr_Each_EMG_Range2.mat');      
+    %load ResultXcorr
+      disp('please select ResultXcorr_~.mat file (which you want to plot x_corr)')
+      selected_file = uigetfile('*.mat',...
+                     'Select One or More Files', ...
+                     'MultiSelect', 'on');
+      load(selected_file);
+    %load ResultXcorr_Each~
+      disp('please select ResultXcorr_Each~.mat file (which you want to plot each x_corr)')
+      selected_file = uigetfile('*.mat',...
+                     'Select One or More Files', ...
+                     'MultiSelect', 'on');
+      load(selected_file);    
+
    case 'Synergy'
     %load ResultXcorr
       disp('please select ResultXcorr_~.mat file (which you want to plot x_corr)')
@@ -53,24 +67,35 @@ title_name = {'lever1 on','lever1 off','lever2 on','lever2 off'};
 switch Tar
    case 'EMG'
       c = jet(12);
-      AllDays = datetime([2017,04,05])+caldays(0:177);
-      dayX = {'2017/04/05','2017/04/10','2017/04/11','2017/04/12','2017/04/13',...
-              '2017/04/19','2017/04/20','2017/04/21','2017/04/24','2017/04/25',...
-              '2017/04/26','2017/05/01','2017/05/09','2017/05/11','2017/05/12',...
-              '2017/05/15','2017/05/16','2017/05/17','2017/05/24','2017/05/26',...
-              '2017/05/29','2017/06/06','2017/06/08','2017/06/12','2017/06/13',...
-              '2017/06/14','2017/06/15','2017/06/16',...'2017/06/19',
-              '2017/06/20',...
-              '2017/06/21','2017/06/22','2017/06/23','2017/06/27','2017/06/28',...
+%       AllDays = datetime([2017,04,05])+caldays(0:177);
+      AllDays = datetime([2017,05,16])+caldays(0:136); %5/16の136日経過 → 9/29
+%       dayX = {'2017/04/05','2017/04/10','2017/04/11','2017/04/12','2017/04/13',...
+%               '2017/04/19','2017/04/20','2017/04/21','2017/04/24','2017/04/25',...
+%               '2017/04/26','2017/05/01','2017/05/09','2017/05/11','2017/05/12',...
+%               '2017/05/15','2017/05/16','2017/05/17','2017/05/24','2017/05/26',...
+%               '2017/05/29','2017/06/06','2017/06/08','2017/06/12','2017/06/13',...
+%               '2017/06/14','2017/06/15','2017/06/16',...'2017/06/19',
+%               '2017/06/20',...
+%               '2017/06/21','2017/06/22','2017/06/23','2017/06/27','2017/06/28',...
+%               '2017/06/29','2017/06/30','2017/07/03','2017/07/04','2017/07/06',...
+%               '2017/07/07','2017/07/10','2017/07/11','2017/07/12','2017/07/13',...
+%               '2017/07/14','2017/07/18','2017/07/19','2017/07/20','2017/07/25',...
+%               '2017/07/26','2017/08/02','2017/08/03','2017/08/04','2017/08/07',...
+%               '2017/08/08','2017/08/09','2017/08/10','2017/08/15','2017/08/17',...
+%               '2017/08/18','2017/08/22','2017/08/23','2017/08/24','2017/08/25',...
+%               '2017/08/29','2017/08/30','2017/08/31','2017/09/01','2017/09/04',...
+%               '2017/09/05','2017/09/06','2017/09/07','2017/09/08','2017/09/11',...
+%               '2017/09/13','2017/09/14','2017/09/25','2017/09/26','2017/09/27','2017/09/29'};%81days
+      dayX = {'2017/05/16','2017/05/17','2017/05/24','2017/05/26','2017/06/28',...
               '2017/06/29','2017/06/30','2017/07/03','2017/07/04','2017/07/06',...
               '2017/07/07','2017/07/10','2017/07/11','2017/07/12','2017/07/13',...
               '2017/07/14','2017/07/18','2017/07/19','2017/07/20','2017/07/25',...
-              '2017/07/26','2017/08/02','2017/08/03','2017/08/04','2017/08/07',...
+              '2017/07/26','2017/08/02','2017/08/04','2017/08/07',...
               '2017/08/08','2017/08/09','2017/08/10','2017/08/15','2017/08/17',...
-              '2017/08/18','2017/08/22','2017/08/23','2017/08/24','2017/08/25',...
+              '2017/08/18','2017/08/22','2017/08/24','2017/08/25',...
               '2017/08/29','2017/08/30','2017/08/31','2017/09/01','2017/09/04',...
               '2017/09/05','2017/09/06','2017/09/07','2017/09/08','2017/09/11',...
-              '2017/09/13','2017/09/14','2017/09/25','2017/09/26','2017/09/27','2017/09/29'};%81days
+              '2017/09/13','2017/09/14','2017/09/25','2017/09/26','2017/09/27','2017/09/29'};%49days(removed 8/3, 8/23)
    case 'Synergy'
       c = lines(4);
 %       c = jet(4);
@@ -157,127 +182,105 @@ kernel = ones(np,1)/np;
 delSyn = [0,0,0,0];%delete plots which synergy belongs to
 delEMG = [1,1,0,0,1,1,1,1,1,0,0,1];
 LEMGs = cell(1,12);
-%EMG List {'FDP';'FDSprox';'FDSdist';'FCU';'PL';'FCR';'BRD';'ECR';'EDCprox';'EDCdist';'ED23';'ECU'}
-%synergy1 : FDSprox, FDSdist, FCU
-%synergy2 : FDP, BRD, ECR, EDCprox
-%synergy3 : EDCdist, ED23, ECU
-%synergy4 : PL, FCR
 
 %% plot Xcorr Each
 if plot_each == 1
     switch Tar
        case 'EMG'
-          for t = 1:4 %trig loop 
-    %       f = figure('Position',[0 0 2000 1000]);
-          k = 1;
-          switch plotFocus
-            case 'off'
-               eval(['f' sprintf('%d',k) '= figure(''Position'',[0 0 2000 1000]);']);
-               Jloop = 1:12;
-            case 'on'
-               if t==1
-                  fe = figure('Position',[0 0 2000 1000]);
-               else
-                  figure(fe)
+          % 図の構造体の作成
+           figure_str = struct;
+           [EMG_num, ~] = size(EMGs);
+           figure_num = ceil(EMG_num/4);  % 作成する図の数 
+           for ii = 1:figure_num
+                eval(['figure_str.f' sprintf('%d',ii) '= figure(''Position'',[0 0 ' num2str(300 * length(plot_timing)) ' 1000]);']);
+           end
+           
+           for t = plot_timing %タイミングごとにloop
+        %       f = figure('Position',[0 0 2000 1000]);
+              k = 1;  % 使い道が謎ではあるが,重要そう
+              switch plotFocus
+                case 'off'
+%                        % 図の構造体の作成
+%                        figure_str = struct;
+%                        [EMG_num, ~] = size(EMGs);
+%                        figure_num = ceil(EMG_num/4);  % 作成する図の数 
+%                        for ii = 1:figure_num
+%                             eval(['figure_str.f' sprintf('%d',ii) '= figure(''Position'',[0 0 ' num2str(300 * length(plot_timing)) ' 1000]);']);
+%                        end
+                       Jloop = 1:EMG_num;   %筋肉の, プロットする順番
+                    case 'on'
+                       if t==1
+                          fe = figure('Position',[0 0 2000 1000]);
+                       else
+                          figure(fe)
+                       end
+                       Jloop = [4 3 10 11];
                end
-               Jloop = [4 3 10 11];
-          end
-          for j=Jloop % EMG loop
-               eval(['plotDe = ResE.T' sprintf('%d',t) ';']);
-               switch plotFocus
-                  case 'off'
-                     subplot(3,4,j);
-                  case 'on'
-                     subplot(4,4,4*(k-1)+t);
-                     k = k+1;
-               end
-
-          %      f = figure;
-               hold on;
-               % area for control data
-               fi1 = fill([xPre4days xPre4days(end:-1:1)],[ones(size(xPre4days)) (-1).*ones(size(xPre4days))],'k');
-               fi1.FaceColor = [0.78 0.78 0.78];       % make the filled area
-               fi1.EdgeColor = 'none';            % remove the line around the filled area
-    % %            % area for disable term
-    % %            fi2 = fill([xnoT xnoT(end:-1:1)],[ones(size(xnoT)) (-1).*ones(size(xnoT))],'k');
-    % %            fi2.FaceColor = [0.5 0.5 0.6];       % make the filled area
-    % %            fi2.EdgeColor = 'none';            % remove the line around the filled area
-               hold off;
-               p = cell(12,1);
-              for i = 1:12 %EMG control loop
-                 spp =1;
-          %         subplot(12,12,12*(j-1)+i);
-                  hold on;
-          %         p{i} = plot(xdays,plotDe{j}(i,:),'Color',c(i,:),'LineWidth',1.3);
-                  switch Ptype
-                     case 'RAW'
-                        p{i} = plot(xdays,plotDe{j}(i,:),'Color',c(i,:),'LineWidth',1.3);
-                     case 'MMean'
-          %               ps{i} = scatter(xdays,plotDe{j}(i,:));
-                        p{i} = plot(xdays,conv2(plotDe{j}(i,:),kernel,'same'),'Color',c(i,:),'LineWidth',1.3);
+              for j=Jloop % 順番に各筋肉のx_corrをプロットしていく 
+                   eval(['plotDe = ResE.T' sprintf('%d',t) ';']);  % タイミングtのデータを取り出す
+                   switch plotFocus
+                      case 'off'
+                            page_num = ceil(j/4);  %何枚目の図にプロット?
+                            eval(['figure(figure_str.f'  num2str(page_num) ')']) %図をgcfにする
+                            height_num = j - (page_num-1) * 4;  %上から何番目にプロット?
+                            location_num = length(plot_timing) * (height_num-1) + find(t==plot_timing);
+                            subplot(4, length(plot_timing), location_num)
+                      case 'on'
+                         subplot(4,4,4*(k-1)+t);
+                         k = k+1;
+                   end
+    
+              %      f = figure;
+                   hold on;
+                   % area for control data %コントロールデータのエリアを灰色に染める
+                   fi1 = fill([xPre4days xPre4days(end:-1:1)],[ones(size(xPre4days)) (-1).*ones(size(xPre4days))],'k'); %よくわからないけど重要
+                   fi1.FaceColor = [0.78 0.78 0.78];       % make the filled area
+                   fi1.EdgeColor = 'none';            % remove the line around the filled area
+                   hold off;
+                   p = cell(12,1);
+                  for i = j %1:12 %control vs each_dayのeach_dayの方の筋肉(今回は同じ筋肉同士のみが見たいので,i = j)
+                     spp =1;
+                      hold on;
+                      switch Ptype
+                         case 'RAW'
+                            p{i} = plot(xdays,plotDe{j}(i,:),'LineWidth',1.3);
+                         case 'MMean'
+                            p{i} = plot(xdays,conv2(plotDe{j}(i,:),kernel,'same'),'Color',c(i,:),'LineWidth',1.3);
+                      end
+%                       if (delEMG(i))  % よくわからない(plotしたものを消す?)
+%                           delete(p{i});
+%                       end
                   end
-                  if (delEMG(i))
-                      delete(p{i});
-                  end
+                  spp = spp+1;
+                  plot([TCD TCD],[-1 1],'k--','LineWidth', 1.3);
+                  % 計測不能の部分を白boxで囲む
+                  fi2 = fill([xnoT xnoT(end:-1:1)],[ones(size(xnoT)) (-1).*ones(size(xnoT))],'k','LineWidth',1.3); 
+                  fi2.FaceColor = [1 1 1];       % make the filled area
+        %           fi2.EdgeColor = 'none';            % remove the line around the filled area
+                  hold off;
+                  % decoration
+                  ylim([-1 1]);
+                  xlim([xPre4days(1) xdays(end)]);
+                  title([EMGs{j,1} ' ' title_name{t}],'FontSize',15);
               end
-              if t ==1    %%%%%%%%%%%%%%%%%%%% trigger %%%%%%%%%%%%%%%%%
-                 if j==4
-                    FCU_A = plotDe{j}([4 3 10 11],:);
-                 elseif j==3
-                    FDSdist_A = plotDe{j}([4 3 10 11],:);
-                 elseif j==10
-                    EDCdist_A = plotDe{j}([4 3 10 11],:);
-                 elseif j==11
-                    ED23_A = plotDe{j}([4 3 10 11],:);
-                 end
-              end
-              spp = spp+1;
-              plot([TCD TCD],[-1 1],'k--','LineWidth', 1.3);
-               % area for disable term
-              fi2 = fill([xnoT xnoT(end:-1:1)],[ones(size(xnoT)) (-1).*ones(size(xnoT))],'k','LineWidth',1.3);
-              fi2.FaceColor = [1 1 1];       % make the filled area
-    %           fi2.EdgeColor = 'none';            % remove the line around the filled area
-              hold off;
-               if(delSyn(1))
-                  delete([p{2},p{3},p{4}]);
+           end
+           % 図の保存
+           if save_fig == 1
+               %save_foldの作成
+               save_fold = 'EachPlot/x_corr_result/EMG';
+               save_fold_path = fullfile(pwd, save_fold);
+               if not(exist(save_fold_path))
+                   mkdir(save_fold_path)
                end
-               if(delSyn(2))
-                  delete([p{1},p{7},p{8},p{9}]);
+               %図を一枚ずつ保存
+               for ii = 1:figure_num
+                    eval(['figure(figure_str.f'  num2str(ii) ')'])
+                    saveas(gcf, [save_fold_path '/' 'EMG_xcorr(' num2str(EMG_num) 'muscle)_page' num2str(ii) '.fig'])
+                    saveas(gcf, [save_fold_path '/' 'EMG_xcorr(' num2str(EMG_num) 'muscle)_page' num2str(ii) '.png'])
                end
-               if(delSyn(3))
-                  delete([p{10},p{11},p{12}]);
-               end
-               if(delSyn(4))
-                  delete([p{5},p{6}]);
-               end
-              ylim([-1 1]);
-              xlim([xPre4days(1) xdays(end)]);
-          %     xlim([xdays(1) xdays(end)]);
-          %     xlim([0 81]);
-              title(EMGs{j,1},'FontSize',25);
-              if j==12
-                  L = legend({'Control','Task Disable','FCU','FDSdist','EDCdist','ED23'},'Location','southwest');
-          %         legend1 = legend(axes1,'show');
-                  set(L,...
-                      'Position',[0.914849183342953 0.120910384068279 0.0556196623180075 0.0803628093101775],...
-                      'FontSize',14);
-                  ylabel('Cross-correlation coefficient');
-                  xlabel('Post tendon transfer [days]');
-              end
-          %     legend1 = legend(EMGs{:,1});
-          %     set(legend1,...
-          %     'Position',[0.914849183342953 0.120910384068279 0.0776196623180075 0.803628093101775],...
-          %     'FontSize',14);
-              if save_fig == 1
-                 cd TaskAllXcorr_syn1-3
-                 saveas(gcf,[EMGs{j,1} '_Xcorr_TaskAll.epsc']);
-                 saveas(gcf,[EMGs{j,1} '_Xcorr_TaskAll.png']);
-                 saveas(gcf,[EMGs{j,1} '_Xcorr_TaskAll.fig']);
-                 cd ../
-              end
-          end
-          end
-
+           end
+           close all
+       %% case of synergy analysis
        case 'Synergy'
           TarN =4; %シナジー数
           %↓t:T2~T3のプロット(food onとfood off (tim1,tim4は不要なので排除))

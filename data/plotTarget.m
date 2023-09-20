@@ -38,18 +38,18 @@ clear
 
 realname = 'SesekiL'; %monkey name
 monkeyname = 'Se'; %prefix of Raw data
-Tar = 'Synergy'; %the data which you want to plot -> 'EMG' or 'Synergy'
+Tar = 'EMG'; %the data which you want to plot -> 'EMG' or 'Synergy'
 save_fold = 'easyData';     % you don't need to change
-plot_fig = 0;               % wtherer you want to plot figures
+plot_fig = 1;               % wtherer you want to plot figures
 pColor = 'K';               %select 'K'(black plot) or 'C'(color plot) Åyrecommend!!Åzpre-analysis:'K' post-analysis:'C'
-save_data = 1;              %save cut data for calculating cross-correlation(each session)
-save_end_control = 1;       %save cut data for calculating cross-correlation(Pre Data as a control data)
+save_data = 0;              %save cut data for calculating cross-correlation(each session)
+save_end_control = 0;       %save cut data for calculating cross-correlation(Pre Data as a control data)
 fontS = 5; % 10;            %font size in figures 
 LineW = 1.5; %0.1;          %width of plot line 
 CTC = 0;                    %plot Cross Talk(I don't confirm whether I can use this) 
 nomalizeAmp = 0;            %normalize Amplitude 
 YL = Inf;                   %(if nomalize Amp == 0) ylim of graph
-save_xcorr_data = 1;        %save data to use of plot x_corr
+save_xcorr_data = 0;        %save data to use of plot x_corr
 nmf_fold_name = 'nmf_result'; %(if you want to plot synergy data) folder name of nmf_fold
 synergy_order = [3, 1, 4, 2];  %(pre1,2,3,4)Ç…ëŒâûÇ∑ÇÈpostÇÃsynergy 
 %% code section
@@ -408,8 +408,6 @@ if strcmp(Tar, 'Synergy') && strcmp(pColor, 'C')
     days_num = length(AllDays);
     for ii = 1:length(Pdata_list)
         for d = 1:days_num
-%             temp = Pall.plotData_sel{d}(synergy_order, :);
-%             Pall.plotData_sel{d} = temp
             temp = eval([Pdata_list{ii} '.plotData_sel{d}(synergy_order, :);']);
             eval([Pdata_list{ii} '.plotData_sel{d} = temp;'])
         end
@@ -608,8 +606,14 @@ if save_xcorr_data == 1
     if not(exist(fullfile(pwd, save_fold)))
         mkdir(save_fold)
     end
-    save([save_fold 'AllDataforXcorr_' num2str(length(Allfiles)) '_' num2str(subN) 'syn.mat'],'Allfiles','AllTAVE','realname','taskRange','plotData_sel')
-    save([save_fold 'DataSetforEachXcorr_' num2str(length(Allfiles)) '_' num2str(subN) 'syn.mat'],'Allfiles','plotWindow1','plotWindow2','plotWindow3','plotWindow4','realname','TrigData_Each')
+    switch Tar
+        case 'EMG'
+            save([save_fold 'AllDataforXcorr_' num2str(length(Allfiles)) '_' num2str(subN) 'EMG.mat'],'Allfiles','AllTAVE','realname','taskRange','plotData_sel')
+            save([save_fold 'DataSetforEachXcorr_' num2str(length(Allfiles)) '_' num2str(subN) 'EMG.mat'],'Allfiles','plotWindow1','plotWindow2','plotWindow3','plotWindow4','realname','TrigData_Each')
+        case 'Synergy'
+            save([save_fold 'AllDataforXcorr_' num2str(length(Allfiles)) '_' num2str(subN) 'syn.mat'],'Allfiles','AllTAVE','realname','taskRange','plotData_sel')
+            save([save_fold 'DataSetforEachXcorr_' num2str(length(Allfiles)) '_' num2str(subN) 'syn.mat'],'Allfiles','plotWindow1','plotWindow2','plotWindow3','plotWindow4','realname','TrigData_Each')
+    end
 end
 
 %% define local function
