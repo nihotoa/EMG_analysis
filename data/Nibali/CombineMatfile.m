@@ -20,14 +20,14 @@ function [] = CombineMatfile(exp_day,real_name_day)
 % real_name_day = 220722;
 monkey_name = 'Ni';
 real_name = 'F';%アルファオメガからの.matファイルの接頭語
-EMG_recording_type = 'AlphaOmega'; %'AlphaOmega'/'Ripple'
-EMG_num = 3; %number of EMG
+EMG_recording_type = 'Ripple'; %'AlphaOmega'/'Ripple'
+EMG_num = 16; %number of EMG
 downHz = 1375;
 CAI_file_num = 1; % CAIのデータ数
 CRAW_file_num = 80; %CRAWのデータ数(なぜか、32→80チャンネルになっていた)
 CLFP_file_num = 80; %CLFPのデータ数(なぜか、32→80チャンネルになっていた)
 exist_EMG = 1; %EMGデータがあるとき1にする
-no_CAI = 1; %正しいCAI信号が取れているかどうか
+no_CAI = 0; %正しいCAI信号が取れているかどうか
 manual_trig = 0; %アルファオメガをmanualで操作している場合(筋電とタイミングずれているから追加の処理をしなきゃいけない)※alphaOmegaで筋電計測の場合は，0にすること
 align_trig = 'CTTL_001'; %筋電とアルファオメガの同期に使う信号
 %% code section
@@ -155,42 +155,45 @@ for ii = 1:length(fileList2)
         end
     end
 end
+
 %ここにタイミングデータの処理を記述する
 %sel_final_frame = round(sel_final_frame*(1375/44000));%finalframeをダウンサンプリング
-for kk = 2:CTTL_file_num %kk:CTTLの数(002と003)
-    if CTTL_file_num == 3
-        for ll = 1:length(sel_CTTL_003_Up) %length(fileList2)だとタスクデータの入っていないファイルがあったときに対処できない(sel_CTTLとの配列数の違いでエラー吐く) 
-            %error_sampling = (sel_CTTL_00kk_TimeBegin(1,ll)-TimeRange(1,1)) * downHz;
-            %sel_CTTL_00kk{ll,1} = error_sampling + sel_CTTL_00kk{ll,1} ;
-            error_sampling = round(eval(['(sel_CTTL_' sprintf('%03d',kk) '_TimeBegin(1,ll) - TimeRange(1,1)) * downHz']));
-            eval(['sel_CTTL_' sprintf('%03d',kk) '_Down{1,ll} = error_sampling + sel_CTTL_' sprintf('%03d',kk) '_Down{1,ll}'])
-            eval(['sel_CTTL_' sprintf('%03d',kk) '_Up{1,ll} = error_sampling + sel_CTTL_' sprintf('%03d',kk) '_Up{1,ll}'])
-        end
-    elseif CTTL_file_num == 2 %successシグナルがないとき
-        for ll = 1:length(sel_CTTL_002_Up) 
-            %error_sampling = (sel_CTTL_00kk_TimeBegin(1,ll)-TimeRange(1,1)) * downHz;
-            %sel_CTTL_00kk{ll,1} = error_sampling + sel_CTTL_00kk{ll,1} ;
-            error_sampling = round(eval(['(sel_CTTL_' sprintf('%03d',kk) '_TimeBegin(1,ll) - TimeRange(1,1)) * downHz']));
-            eval(['sel_CTTL_' sprintf('%03d',kk) '_Down{1,ll} = error_sampling + sel_CTTL_' sprintf('%03d',kk) '_Down{1,ll}'])
-            eval(['sel_CTTL_' sprintf('%03d',kk) '_Up{1,ll} = error_sampling + sel_CTTL_' sprintf('%03d',kk) '_Up{1,ll}'])
+if exist('CEMG_file_num')
+    for kk = 2:CTTL_file_num %kk:CTTLの数(002と003)
+        if CTTL_file_num == 3
+            for ll = 1:length(sel_CTTL_003_Up) %length(fileList2)だとタスクデータの入っていないファイルがあったときに対処できない(sel_CTTLとの配列数の違いでエラー吐く) 
+                %error_sampling = (sel_CTTL_00kk_TimeBegin(1,ll)-TimeRange(1,1)) * downHz;
+                %sel_CTTL_00kk{ll,1} = error_sampling + sel_CTTL_00kk{ll,1} ;
+                error_sampling = round(eval(['(sel_CTTL_' sprintf('%03d',kk) '_TimeBegin(1,ll) - TimeRange(1,1)) * downHz']));
+                eval(['sel_CTTL_' sprintf('%03d',kk) '_Down{1,ll} = error_sampling + sel_CTTL_' sprintf('%03d',kk) '_Down{1,ll}'])
+                eval(['sel_CTTL_' sprintf('%03d',kk) '_Up{1,ll} = error_sampling + sel_CTTL_' sprintf('%03d',kk) '_Up{1,ll}'])
+            end
+        elseif CTTL_file_num == 2 %successシグナルがないとき
+            for ll = 1:length(sel_CTTL_002_Up) 
+                %error_sampling = (sel_CTTL_00kk_TimeBegin(1,ll)-TimeRange(1,1)) * downHz;
+                %sel_CTTL_00kk{ll,1} = error_sampling + sel_CTTL_00kk{ll,1} ;
+                error_sampling = round(eval(['(sel_CTTL_' sprintf('%03d',kk) '_TimeBegin(1,ll) - TimeRange(1,1)) * downHz']));
+                eval(['sel_CTTL_' sprintf('%03d',kk) '_Down{1,ll} = error_sampling + sel_CTTL_' sprintf('%03d',kk) '_Down{1,ll}'])
+                eval(['sel_CTTL_' sprintf('%03d',kk) '_Up{1,ll} = error_sampling + sel_CTTL_' sprintf('%03d',kk) '_Up{1,ll}'])
+            end
         end
     end
-end
 
-if CTTL_file_num == 2
-    sel_CTTL_002_Up = cell2mat(sel_CTTL_002_Up);
-    sel_CTTL_002_Down = cell2mat(sel_CTTL_002_Down);
-    sel_CTTL_002_TimeBegin = TimeRange(1,1);
-    sel_CTTL_002_TimeEnd = sel_CTTL_002_TimeEnd(1,ll);
-elseif CTTL_file_num == 3
-    sel_CTTL_002_Up = cell2mat(sel_CTTL_002_Up);
-    sel_CTTL_002_Down = cell2mat(sel_CTTL_002_Down);
-    sel_CTTL_002_TimeBegin = TimeRange(1,1);
-    sel_CTTL_002_TimeEnd = sel_CTTL_002_TimeEnd(1,ll);
-    sel_CTTL_003_Up = cell2mat(sel_CTTL_003_Up);
-    sel_CTTL_003_Down = cell2mat(sel_CTTL_003_Down);
-    sel_CTTL_003_TimeBegin = TimeRange(1,1);
-    sel_CTTL_003_TimeEnd = sel_CTTL_003_TimeEnd(1,ll);
+    if CTTL_file_num == 2
+        sel_CTTL_002_Up = cell2mat(sel_CTTL_002_Up);
+        sel_CTTL_002_Down = cell2mat(sel_CTTL_002_Down);
+        sel_CTTL_002_TimeBegin = TimeRange(1,1);
+        sel_CTTL_002_TimeEnd = sel_CTTL_002_TimeEnd(1,ll);
+    elseif CTTL_file_num == 3
+        sel_CTTL_002_Up = cell2mat(sel_CTTL_002_Up);
+        sel_CTTL_002_Down = cell2mat(sel_CTTL_002_Down);
+        sel_CTTL_002_TimeBegin = TimeRange(1,1);
+        sel_CTTL_002_TimeEnd = sel_CTTL_002_TimeEnd(1,ll);
+        sel_CTTL_003_Up = cell2mat(sel_CTTL_003_Up);
+        sel_CTTL_003_Down = cell2mat(sel_CTTL_003_Down);
+        sel_CTTL_003_TimeBegin = TimeRange(1,1);
+        sel_CTTL_003_TimeEnd = sel_CTTL_003_TimeEnd(1,ll);
+    end
 end
 
 %% Combine multi file of CLFP
@@ -308,13 +311,15 @@ end
 
 if  strcmp(EMG_recording_type, 'Ripple')
     %CLFPに関して
-     for kk = 1:CLFP_file_num
-            %eval(['CEMG_' sprintf('%03d',kk) ' = All_CEMG(kk,:);'])
-            eval(['CLFP_' sprintf('%03d',kk) ' = All_CLFP{kk,1};'])
-            eval(['CLFP_' sprintf('%03d',kk) '_KHz = downHz/1000;' ])
-            eval(['CLFP_' sprintf('%03d',kk) '_KHz_Orig = downHz/1000;' ])
-            eval(['CLFP_' sprintf('%03d',kk) '_TimeBegin = TimeRange(1,1);' ])
-            eval(['CLFP_' sprintf('%03d',kk) '_TimeEnd = TimeRange(1,2);' ])
+     if exist('All_CLFP')
+         for kk = 1:CLFP_file_num
+                %eval(['CEMG_' sprintf('%03d',kk) ' = All_CEMG(kk,:);'])
+                eval(['CLFP_' sprintf('%03d',kk) ' = All_CLFP{kk,1};'])
+                eval(['CLFP_' sprintf('%03d',kk) '_KHz = downHz/1000;' ])
+                eval(['CLFP_' sprintf('%03d',kk) '_KHz_Orig = downHz/1000;' ])
+                eval(['CLFP_' sprintf('%03d',kk) '_TimeBegin = TimeRange(1,1);' ])
+                eval(['CLFP_' sprintf('%03d',kk) '_TimeEnd = TimeRange(1,2);' ])
+         end
      end
      %CRAWに関して
      for kk = 1:CRAW_file_num
@@ -327,28 +332,38 @@ if  strcmp(EMG_recording_type, 'Ripple')
      end
 end
 %CTTL信号に関して
-for kk = 2:CTTL_file_num
-    eval(['CTTL_' sprintf('%03d',kk) '_Up = sel_CTTL_' sprintf('%03d',kk) '_Up;'])
-    eval(['CTTL_' sprintf('%03d',kk) '_Down = sel_CTTL_' sprintf('%03d',kk) '_Down;'])
-    eval(['CTTL_' sprintf('%03d',kk) '_TimeBegin = TimeRange(1,1);']) %TimeEndはラストファイルのTimeEndだが、すでに代入済みなので、ここで定義しなくていい
-    eval(['CTTL_' sprintf('%03d',kk) '_KHz = (downHz/1000);'])
-    eval(['CTTL_' sprintf('%03d',kk) '_KHz_Orig = (downHz/1000);'])
+if exist("CTTL_file_num")
+    for kk = 2:CTTL_file_num
+        eval(['CTTL_' sprintf('%03d',kk) '_Up = sel_CTTL_' sprintf('%03d',kk) '_Up;'])
+        eval(['CTTL_' sprintf('%03d',kk) '_Down = sel_CTTL_' sprintf('%03d',kk) '_Down;'])
+        eval(['CTTL_' sprintf('%03d',kk) '_TimeBegin = TimeRange(1,1);']) %TimeEndはラストファイルのTimeEndだが、すでに代入済みなので、ここで定義しなくていい
+        eval(['CTTL_' sprintf('%03d',kk) '_KHz = (downHz/1000);'])
+        eval(['CTTL_' sprintf('%03d',kk) '_KHz_Orig = (downHz/1000);'])
+    end
 end
 
 %% save data
 switch EMG_recording_type
     case 'Ripple'
         if exist_EMG == 1
-            if CTTL_file_num == 2
-                save(['AllData_' monkey_name num2str(exp_day) '.mat'],'CAI*','CEMG*','CLFP*','CRAW*','Channel_ID_Name_Map','Ports_ID_Name_Map','TimeRange','CTTL_002*')
-            elseif CTTL_file_num == 3
-                save(['AllData_' monkey_name num2str(exp_day) '.mat'],'CAI*','CEMG*','CLFP*','CRAW*','Channel_ID_Name_Map','Ports_ID_Name_Map','TimeRange','CTTL_002*','CTTL_003*')
+            try
+                if CTTL_file_num == 2
+                    save(['AllData_' monkey_name num2str(exp_day) '.mat'],'CAI*','CEMG*','CLFP*','CRAW*','Channel_ID_Name_Map','Ports_ID_Name_Map','TimeRange','CTTL_002*')
+                elseif CTTL_file_num == 3
+                    save(['AllData_' monkey_name num2str(exp_day) '.mat'],'CAI*','CEMG*','CLFP*','CRAW*','Channel_ID_Name_Map','Ports_ID_Name_Map','TimeRange','CTTL_002*','CTTL_003*')
+                end
+            catch
+                save(['AllData_' monkey_name num2str(exp_day) '.mat'],'CAI*','CEMG*','CLFP*','CRAW*','Channel_ID_Name_Map','Ports_ID_Name_Map','TimeRange')
             end
         else
-            if CTTL_file_num == 2
-                save(['AllData_' monkey_name num2str(exp_day) '.mat'],'CAI*','CLFP*','CRAW*','Channel_ID_Name_Map','Ports_ID_Name_Map','TimeRange','CTTL_002*')
-            elseif CTTL_file_num == 3
-                save(['AllData_' monkey_name num2str(exp_day) '.mat'],'CAI*','CLFP*','CRAW*','Channel_ID_Name_Map','Ports_ID_Name_Map','TimeRange','CTTL_002*','CTTL_003*')
+            try
+                if CTTL_file_num == 2
+                    save(['AllData_' monkey_name num2str(exp_day) '.mat'],'CAI*','CLFP*','CRAW*','Channel_ID_Name_Map','Ports_ID_Name_Map','TimeRange','CTTL_002*')
+                elseif CTTL_file_num == 3
+                    save(['AllData_' monkey_name num2str(exp_day) '.mat'],'CAI*','CLFP*','CRAW*','Channel_ID_Name_Map','Ports_ID_Name_Map','TimeRange','CTTL_002*','CTTL_003*')
+                end
+            catch
+                save(['AllData_' monkey_name num2str(exp_day) '.mat'],'CAI*','CLFP*','CRAW*','Channel_ID_Name_Map','Ports_ID_Name_Map','TimeRange')
             end
         end
         cd ../

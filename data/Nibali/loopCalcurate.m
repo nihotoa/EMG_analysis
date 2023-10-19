@@ -16,14 +16,14 @@ if you conduct ' Copy_of_sample_data_walkthrough.m', please remove the path of '
 
 %% set param
 %exp_days = [20230707 20230710 20230711 20230712 20230714 20230718 20230719 20230720 20230721 20230724 20230726];
-exp_days = [20230814 20230815 20230816];
-conduct_Copy_of = 1;
-EMG_recording_type = 'AlphaOmega'; %which device you used to record EMG ('Ripple'/'AlphaOmega')
+exp_days = [20220001,20220002,20220003,20220004,20220005];
+conduct_Copy_of = 0;
+EMG_recording_type = 'Ripple'; %which device you used to record EMG ('Ripple'/'AlphaOmega')
 conduct_CombineMatfile = 1;
 process_type = 'normal'; % 'normal' / 'no_sensor'(基本normal, 新しいタスクの探索のために，タスク定義を従来のものと変更する必要があったので，task_defineを作った)
 signal_type = 'no_CAI';  
-electrode_restrict = {'020','021','022'};
-conduct_untitled = 1;
+electrode_restrict = {'020','021','022'}; %(if EMG_recording_type=="AlphaOmega")the number of the electrode which is used to record EMG(no need to change)
+conduct_untitled = 0;
 %% code section
 % conduct Copy_of_sample_data_walkthrough.m with using 'exp_days'
 if conduct_Copy_of

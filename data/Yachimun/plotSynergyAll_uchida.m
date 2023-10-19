@@ -3,7 +3,7 @@ function plotSynergyAll_uchida(fold_name,emg_group,pcNum,plk)
 task = 'standard';
 
 
-switch emg_group  %‡”Ôç‚ç‚È‚¢‚Æƒ_ƒ(‚»‚ê‚©‘‚«Š·‚¦‚éTargetName‚©‚çEMGs‚ğì‚é‚æ‚¤‚É‘‚«Š·‚¦‚é)
+switch emg_group  %‡”Ôç‚ç‚È‚¢‚Æƒ_ƒ(TargetName‚©‚çEMGs‚ğì‚é‚æ‚¤‚É‘‚«Š·‚¦‚é)
     case 1%control (FDP)
         EMG_num = 7;
         EMGs = {'BRD_1';'BRD_2';'ECR';'EDC';'FCR';'FCU';'FDPr'};
