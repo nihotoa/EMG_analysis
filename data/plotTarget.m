@@ -37,8 +37,8 @@ clear
 %Ptrig2 : Averaged dataset on each session -50:50%(triggered at hold_on2)
 %Ptrig3 : Averaged dataset on each session -25:105%(triggered at hold_on1)
 
-realname = 'Yachimun'; %monkey name 'Yachimun'/'SesekiL'
-monkeyname = 'F'; %prefix of Raw data(ex) 'Se' or 'Ya' or 'F'
+realname = 'SesekiL'; %monkey name 'Yachimun'/'SesekiL'
+monkeyname = 'Se'; %prefix of Raw data(ex) 'Se' or 'Ya' or 'F'
 Tar = 'EMG'; %the data which you want to plot -> 'EMG' or 'Synergy'
 save_fold = 'easyData';     % you don't need to change
 plot_fig = 1;               % wtherer you want to plot figures
@@ -284,13 +284,19 @@ switch pColor
          case 'F'
             PostDays = P.PostDays;
             Sp = length(PostDays);
-            Csp = zeros(Sp,3);
-            Csp(:,1) = ones(Sp,1).*linspace(0.3,1,Sp)';
+            cmap_cold = [0 200 255; 0 120 255; 0 40 255];
+            cmap_warm = [236 0 0];
+            Csp =  [cmap_cold; cmap_warm] / 255;
+%             Csp = zeros(Sp,3);
+%             Csp(:,1) = ones(Sp,1).*linspace(0.3,1,Sp)';
          case 'Se'
             PostDays = P.PostDays;
             Sp = length(PostDays);
-            Csp = zeros(Sp,3);
-            Csp(:,2) = ones(Sp,1).*linspace(0.3,1,Sp)';
+            cmap_cold = [0 200 255; 0 150 255; 0 100 255; 0 40 255];
+            cmap_warm = [236 0 0];
+            Csp =  [cmap_cold; cmap_warm] / 255;
+%             Csp = zeros(Sp,3);
+%             Csp(:,2) = ones(Sp,1).*linspace(0.3,1,Sp)';
          case 'Ma'
             PostDays = P.PostDays;
             Sp = length(PostDays);
@@ -458,9 +464,11 @@ if plot_fig == 1
                  end
               case 'C'
                  try
-                    plot(Pall.x,Pall.plotData_sel{d,1}{m,1},'Color',Csp(find(PostDays==AllDaysN(d)),:),'LineWidth',LineW);
+%                     plot(Pall.x,Pall.plotData_sel{d,1}{m,1},'Color',Csp(find(PostDays==AllDaysN(d)),:),'LineWidth',LineW);
+                     plot(Pall.x,Pall.plotData_sel{d,1}{m,1},'Color',Csp(d,:),'LineWidth',LineW);
                  catch
-                    plot(Pall.x,Pall.plotData_sel{d,1}(m,:),'Color',Csp(find(PostDays==AllDaysN(d)),:),'LineWidth',LineW);
+%                     plot(Pall.x,Pall.plotData_sel{d,1}(m,:),'Color',Csp(find(PostDays==AllDaysN(d)),:),'LineWidth',LineW);
+                     plot(Pall.x,Pall.plotData_sel{d,1}(m,:),'Color',Csp(d,:),'LineWidth',LineW);
                  end
           end
        end
@@ -748,9 +756,9 @@ function plot_timing_figures(figure_str, data_str)
           switch data_str.pColor
              case 'C'
                 try
-                    plot(data_str.Pdata.x,cell2mat(data_str.Pdata.plotData_sel{d,1}(m,:)),'Color',data_str.Csp(find(data_str.PostDays==data_str.AllDaysN(d)),:),'LineWidth',data_str.LineW);
+                    plot(data_str.Pdata.x,cell2mat(data_str.Pdata.plotData_sel{d,1}(m,:)),'Color',data_str.Csp(d,:),'LineWidth',data_str.LineW);
                 catch
-                    plot(data_str.Pdata.x,data_str.Pdata.plotData_sel{d,1}(m,:),'Color',data_str.Csp(find(data_str.PostDays==data_str.AllDaysN(d)),:),'LineWidth',data_str.LineW);
+                    plot(data_str.Pdata.x,data_str.Pdata.plotData_sel{d,1}(m,:),'Color',data_str.Csp(d,:), 'LineWidth',data_str.LineW);
                 end
              case 'K'
                 try

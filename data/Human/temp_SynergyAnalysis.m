@@ -19,10 +19,10 @@ trim_task = 1; %synergy_Hをトリミングするかどうか
 trim_type = 'average'; % 'average'/'stack'
 use_pc = 'mac'; % 'mac'/'windows'
 normalize_sampling = 350; %時間正規化するときの分解能(1000だったら，1000点プロット)
-% filter_l = 2;
+
 %% code section
 % standard.matとt_~standard.matを選択
-disp('【please select t~_standard.mat and _standart.mat】')
+disp('【please select t~_standard.mat and _standart.mat(location: /patientB/日付/Task~/nmf_result/patientB_standard/)】')
 [fileNames,use_val.pathName] = selectGUI(patient_name, 'standard');
 switch use_pc
     case 'windows'
@@ -50,8 +50,12 @@ for task_num = 1:length(task_names)
     %loadするfile名の変更
     r2_fileName = strrep(default_r2_fileName, task_names{1}, task_names{task_num});
     synergy_fileName = strrep(default_synergy_filename, task_names{1}, task_names{task_num});
-
-    load([use_val.pathName r2_fileName], 'r2', 'shuffle', 'TargetName');
+    try
+        load([use_val.pathName r2_fileName], 'r2', 'shuffle', 'TargetName');
+    catch
+        disp(['task' sprintf('%02d', task_num) 'は存在しません'])
+        continue
+    end
     figure('position', [100, 100, 800, 800]);
     plot(r2, 'LineWidth',1.5)
     hold on

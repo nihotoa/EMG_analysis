@@ -3,24 +3,23 @@
 Coded by: Naohito Ota
 Last modification: 2023.04.05
 【function】
-check function to confirm whether RAW_EMG is correct or not
+フィルタリングされた筋電,もしくは生の筋電をplotするための関数
 
 pre: you need to finish all procedure up to filterEMG.m and
 SuccessTiming_func.m and getMaxY.m
-post nothing
+post: nothing
 
 [caution!!!!]
 if you want to use  'fix_lim', please get yMax_list by conducting getMaxY.m
+もしfix_limを使用したい場合(日毎にy軸のスケールが変わらないようにしたい場合)はgetMaxY.mを先に実行してください)
 【課題点】
-条件分岐が冗長すぎる(コードの書き直し)
-fix_limがfilteredの方だと対応していない
+最初の1trialしかplotしていない.すべてのtrialを出力するor平均値を出力するできるようにする
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
 patient_name = 'patientB';
 include_task = 1; %何個分のタスクを含めるか
-% task_length = 20; %(task_timingがなくてトリミングできない時)何秒分プロットするか(0の場合は，全てプロットする)
 merge_EMG_figure = 1; %画像をまとめて１枚として作るか，個々の筋電別に作るか
 plot_RAW = 0; %rawデータをプロットするかどうか
 plot_filtered = 1; %filterデータをplotするかどうか
@@ -98,7 +97,7 @@ for ii = 1:length(RawEMG_fileNames) %タスクの種類???数
     end
     select_dir = [RawEMG_pathName task_name];
     if ii == 1
-        disp('【Please select filtered_EMG files】')
+        disp('【Please select filtered_EMG files(patient -> 日付 -> task -> nmf_result -> )】')
         [filtered_EMG_fileNames, filtered_EMG_pathName] = uigetfile([ '*' unique_string '.mat'],'Select a file',select_dir,'MultiSelect','on');
         change_place = task_name;
         changed_path = filtered_EMG_pathName; 
