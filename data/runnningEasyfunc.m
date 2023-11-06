@@ -47,6 +47,7 @@ saveE_filt = 1;
 % which monkey?
 %realname = 'Wasa';
 realname = 'Yachimun'; 
+% realname = 'SesekiL';
 % realname = 'SesekiR';
 % realname = 'Matatabi';
 % realname = 'Nibali';

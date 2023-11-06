@@ -4,9 +4,9 @@ Last modification:2023.05.01
 Coded by: Naohito Ota
 【procedure】
 ・pre:ReadCsv.m
-・post:ExtractMotionData.m or temp_SynergyAnalysis.m or 
+・post:ExtractMotionData.m(動作解析するためのコード) or ExtractEMGData.m(筋電の生データを筋電ごとに.matファイルに保存する)
 【function】
-・手動でタスクのstart,endを見つけて，それぞれのタイミング情報を.matファイルで出力
+・動作データを元に,手動でタスクのstart,endのタイミングを見つけて，それぞれのタイミング情報を.matファイルで出力
 ・タスクごとに作る必要がある
 (保存場所はpatient -> date -> task)
 【注意点】

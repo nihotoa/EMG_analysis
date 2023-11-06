@@ -24,7 +24,6 @@ original_path = uigetdir(day_fold_path);
 original_path_elements = split(original_path, '/');
 day_fold_idx = find(contains(original_path_elements, day_names_prefix));
 task_fold_idx = find(contains(original_path_elements, task_names));
-a = 1;
 for ii = 1:length(day_names)
     for jj = 1:length(task_names)
         % データの入っているdirectoryのpathを作成

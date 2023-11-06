@@ -22,8 +22,8 @@ switch monkeyname
     case 'Su'
         real_name = 'Suruku';
     case 'Se'
-        %real_name = 'SesekiL';
-        real_name = 'SesekiR';
+        real_name = 'SesekiL';
+%         real_name = 'SesekiR';
 end
 global task
 xpdate = sprintf('%d',xpdate_num);

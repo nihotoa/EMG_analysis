@@ -4,17 +4,18 @@ Coded by: Naohito Ota
 Last Modification: 2023.05.01
 
 【function】
-・this function conduct the pre-processing of EMG (down_sampling, rect, etc...)
+・RAWデータに対して前処理を行う(ハイパス => 整流 => ローパス => ダウンサンプリング)
 
 【procedure】
 pre: ExtractEMGData.m
-post: (if you want to check RAW or fileteredEMG by plot) ceckRawEMG.m (elseif you want to devide all data into each trial data) devide filteredEMG (else)makeEMGNMF_Oya or Ohta (交差検証　必要→Oya　しない→Ohta) 
-after-post: temp_SynergyAnalysis.m
-''
+post: makeEMGNMF_Ohta(シナジー解析を行う) => temp_SynergyAnalysis.m(シナジー解析の結果を図示するやつ.仮バージョン)
+【絶対に必要なわけではないけど,使える関数】
+checkRawEMG.m(この解析で得られたデータ(もしくは生データ)をplotして可視化する)
+devide_filteredEMG.m: この解析で得られたデータを，トライアルごとに切り出す.
+
 【課題点】
-・ローパスのカットオフ周波数のさじ加減がわからないから話し合って決める
+・ローパスのカットオフ周波数の匙加減がわからないから話し合って決める
 ・タスクが複数種類あるので，一気に回せるように変更する
-・NMFのためのフォルダ構造の作り方をしっかり理解していないので，適宜変更する(nmf_fold_path)
 ・get_task_dirsで，欲しいディレクトリの階層をマニュアルで指定しているがwindowsとmacで階層構造が異なるため
 　齟齬が生じている
 %}
@@ -23,13 +24,13 @@ clear
 %% set param
 patient_name = 'patientB';
 use_val.SR = 1000; %筋電のサンプリングレート
-use_val.DSR = 100; %
+use_val.DSR = 100; %ダウンサンプリング後の筋電のサンプリングレート
 use_val.filter_h = 50; %ハイパスのカットオフ周波数
-use_val.filter_l = 3;
-use_val.medianfilter = 1; %wheter you apply median filter
+use_val.filter_l = 3; %ローパスのカットオフ周波数
+use_val.medianfilter = 1; %1/0 メジアンフィルタを適用するかどうか(1なら適用する)
 use_val.med_window = 200; %medianフィルタの次数(窓の大きさ)
-task_names = {'pre', 'post'}; %階層構造を指定せずに，特定の文字列を持ってくるために必要
-confirm_filtered_data = 1; %filterされた後の波を主観的に判断するための機能(もっと詳細に知りたい場合はcheckRawEMG.mを回して)
+task_names = {'pre', 'post'}; %(変える必要ない)階層構造を指定せずに，特定の文字列を持ってくるために必要
+confirm_filtered_data = 1; %(1/0) filterされた後の波を主観的に判断するための機能(もっと詳細に知りたい場合はcheckRawEMG.mを回して)
 
 %% code section
 disp('【Please select .mat file which is created by ExtractEMGData.m(day -> task -> RAW)】')
@@ -46,6 +47,10 @@ for task_num = 1:length(task_names)
         %↓前処理を行うローカル関数を実行
         switch use_val.medianfilter
             case 1
+                %別々の処理をされた筋電を返す
+                % processed_EMG:highpass => rect=> lowpass => downsample
+                % ex_spike_EMG: highpass => medianフィルタ
+                % ex_spike_EMGは保存されてない
                 [processed_EMG,ex_spike_EMG] = EMG_filter(use_val);
             otherwise
                 processed_EMG = EMG_filter(use_val);

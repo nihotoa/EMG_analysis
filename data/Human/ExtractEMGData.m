@@ -3,10 +3,11 @@
 Coded by: Naohito Ohta
 Last Modification:2023.05.01
 【procedure】
-pre:ReadCsv.m
+pre:SuccessTiming_func.m
 post:filterEMG
 【function】
 ・得られた.matファイルから個々の筋肉の筋電を抽出して.mat形式でタスクごとに保存
+・[データのセーブ場所]患者 => 日付 => タスク => RAWフォルダの中
 【課題点】
 命名規則のための変数名の変更は，起こったエラーに対して継ぎ足しで条件設定しているので，新たな問題が発生したときは
 それに対応できるように継ぎ足すこと．

@@ -13,11 +13,23 @@ AllDays,dayX,visual_synは適宜変更すること
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% plot crosscorrelation
-Tar = 'Synergy';
+Tar = 'EMG';
+
 switch Tar
    case 'EMG'
-      load('ResultXcorr_80.mat');
-      load('ResultXcorr_Each_EMG_Range2.mat');      
+    %load ResultXcorr
+      disp('please select ResultXcorr_~.mat file (which you want to plot x_corr)')
+      selected_file = uigetfile('*.mat',...
+                     'Select One or More Files', ...
+                     'MultiSelect', 'on');
+      load(selected_file);
+    %load ResultXcorr_Each~
+      disp('please select ResultXcorr_Each~.mat file (which you want to plot each x_corr)')
+      selected_file = uigetfile('*.mat',...
+                     'Select One or More Files', ...
+                     'MultiSelect', 'on');
+      load(selected_file);    
+
    case 'Synergy'
 %       load('ResultXcorr_80_syn.mat');
 %       load('ResultXcorr_Each_syn_Range2.mat');
@@ -38,35 +50,41 @@ end
 save_data = 1;
 save_fig = 1;
 plotFocus = 'off';
-plot_all = 0; %if you want to plot x_corr which is extracted from all range of task, please set '1'
 plot_each = 1;% if you want to plot x_corr which is extracted from around each timing of task, please set '1'
 synergy_combination = 'dist-dist'; %dist-dist,dist-prox,prox-dist,prox-prox (procedure is EDC-FDS)
-vidual_syn =  [1,2,3,4]; %please select the synergy group which you want to plot!!
-plot_timing = [2,3];%任意の２個(それ以上は対応していない)
+vidual_syn =  [2,3]; %please select the synergy group which you want to plot!!
+plot_timing = [1,2,3,4];
 title_name = {'lever1 on','lever1 off','photo on','photo off'};
 % figure;
 
 switch Tar
    case 'EMG'
       c = jet(12);
-      AllDays = datetime([2017,04,05])+caldays(0:177);
-      dayX = {'2017/04/05','2017/04/10','2017/04/11','2017/04/12','2017/04/13',...
-              '2017/04/19','2017/04/20','2017/04/21','2017/04/24','2017/04/25',...
-              '2017/04/26','2017/05/01','2017/05/09','2017/05/11','2017/05/12',...
-              '2017/05/15','2017/05/16','2017/05/17','2017/05/24','2017/05/26',...
-              '2017/05/29','2017/06/06','2017/06/08','2017/06/12','2017/06/13',...
-              '2017/06/14','2017/06/15','2017/06/16',...'2017/06/19',
-              '2017/06/20',...
-              '2017/06/21','2017/06/22','2017/06/23','2017/06/27','2017/06/28',...
-              '2017/06/29','2017/06/30','2017/07/03','2017/07/04','2017/07/06',...
-              '2017/07/07','2017/07/10','2017/07/11','2017/07/12','2017/07/13',...
-              '2017/07/14','2017/07/18','2017/07/19','2017/07/20','2017/07/25',...
-              '2017/07/26','2017/08/02','2017/08/03','2017/08/04','2017/08/07',...
-              '2017/08/08','2017/08/09','2017/08/10','2017/08/15','2017/08/17',...
-              '2017/08/18','2017/08/22','2017/08/23','2017/08/24','2017/08/25',...
-              '2017/08/29','2017/08/30','2017/08/31','2017/09/01','2017/09/04',...
-              '2017/09/05','2017/09/06','2017/09/07','2017/09/08','2017/09/11',...
-              '2017/09/13','2017/09/14','2017/09/25','2017/09/26','2017/09/27','2017/09/29'};%81days
+      AllDays = datetime([2020,01,17])+caldays(0:73); %1/17の73日経過 -> 3/30
+      dayX = {'2020/01/17','2020/01/19','2020/01/20','2020/02/10','2020/02/12',...
+      '2020/02/13','2020/02/14','2020/02/17','2020/02/18','2020/02/19',...
+      '2020/02/20','2020/02/21','2020/02/26','2020/03/03','2020/03/04',...
+      '2020/03/05','2020/03/06','2020/03/09','2020/03/10','2020/03/16',...
+      '2020/03/17','2020/03/18','2020/03/19','2020/03/23','2020/03/24',...
+      '2020/03/25','2020/03/26','2020/03/30'}; %28days
+
+%       dayX = {'2017/04/05','2017/04/10','2017/04/11','2017/04/12','2017/04/13',...
+%               '2017/04/19','2017/04/20','2017/04/21','2017/04/24','2017/04/25',...
+%               '2017/04/26','2017/05/01','2017/05/09','2017/05/11','2017/05/12',...
+%               '2017/05/15','2017/05/16','2017/05/17','2017/05/24','2017/05/26',...
+%               '2017/05/29','2017/06/06','2017/06/08','2017/06/12','2017/06/13',...
+%               '2017/06/14','2017/06/15','2017/06/16',...'2017/06/19',
+%               '2017/06/20',...
+%               '2017/06/21','2017/06/22','2017/06/23','2017/06/27','2017/06/28',...
+%               '2017/06/29','2017/06/30','2017/07/03','2017/07/04','2017/07/06',...
+%               '2017/07/07','2017/07/10','2017/07/11','2017/07/12','2017/07/13',...
+%               '2017/07/14','2017/07/18','2017/07/19','2017/07/20','2017/07/25',...
+%               '2017/07/26','2017/08/02','2017/08/03','2017/08/04','2017/08/07',...
+%               '2017/08/08','2017/08/09','2017/08/10','2017/08/15','2017/08/17',...
+%               '2017/08/18','2017/08/22','2017/08/23','2017/08/24','2017/08/25',...
+%               '2017/08/29','2017/08/30','2017/08/31','2017/09/01','2017/09/04',...
+%               '2017/09/05','2017/09/06','2017/09/07','2017/09/08','2017/09/11',...
+%               '2017/09/13','2017/09/14','2017/09/25','2017/09/26','2017/09/27','2017/09/29'};%81days
    case 'Synergy'
       c = lines(4);
 %       c = jet(4);
@@ -83,11 +101,11 @@ switch Tar
 %               '2017/09/13','2017/09/14','2017/09/25','2017/09/26','2017/09/27','2017/09/29'};%51days
 
       dayX = {'2020/01/17','2020/01/19','2020/01/20','2020/02/10','2020/02/12',...
-              '2020/02/13','2020/02/14','2020/02/17','2020/02/18','2020/02/19',...
+              '2020/02/13','2020/02/17','2020/02/18','2020/02/19',...
               '2020/02/20','2020/02/21','2020/02/26','2020/03/03','2020/03/04',...
               '2020/03/05','2020/03/06','2020/03/09','2020/03/10','2020/03/16',...
               '2020/03/17','2020/03/18','2020/03/19','2020/03/23','2020/03/24',...
-              '2020/03/25','2020/03/26','2020/03/30'};%28days
+              '2020/03/25','2020/03/26','2020/03/30'};%27days(exept 2/14)
 
 %         dayX = {'2017/05/16','2017/05/17','2017/05/24','2017/05/26','2017/06/28',...
 %           '2017/06/29','2017/06/30','2017/07/03','2017/07/04','2017/07/06',...
@@ -123,6 +141,7 @@ TTsurgD = datetime([2020,01,21]);                %date of tendon transfer surger
 TTtaskD = datetime([2020,02,10]);                %date monkey started task by himself after surgery & over 100 success trials (he started to work on June.28)
 Xpost = zeros(size(AllDays));
 Xpre4 = zeros(size(AllDays));
+% 
 k=1;l=1;
 for i=1:length(AllDays)
    if k>length(dayX)
@@ -155,318 +174,114 @@ LEMGs = cell(1,12);
 %synergy3 : EDCdist, ED23, ECU
 %synergy4 : PL, FCR
 
-%% plot Xcorr All
-if plot_all == 1
-    switch Tar
-       case 'EMG'
-          FCU_A = zeros(4,80);
-          FDSdist_A = zeros(4,80);
-          EDCdist_A = zeros(4,80);
-          ED23_A = zeros(4,80);
-          f = figure('Position',[0 0 2000 1000]);
-          for j=1:12
-               eval(['plotD = cell2mat(Re.' EMGs{j,1} ');']);
-               subplot(3,4,j);
-          %      f = figure;
-               hold on;
-               % area for control data
-               fi1 = fill([xPre4days xPre4days(end:-1:1)],[ones(size(xPre4days)) (-1).*ones(size(xPre4days))],'k');
-               fi1.FaceColor = [0.78 0.78 0.78];       % make the filled area
-               fi1.EdgeColor = 'none';            % remove the line around the filled area
-    % %            % area for disable term
-    % %            fi2 = fill([xnoT xnoT(end:-1:1)],[ones(size(xnoT)) (-1).*ones(size(xnoT))],'k');
-    % %            fi2.FaceColor = [0.5 0.5 0.6];       % make the filled area
-    % %            fi2.EdgeColor = 'none';            % remove the line around the filled area
-               p = cell(12,1);
-               hold off;
-              for i = 1:12
-          %         subplot(12,12,12*(j-1)+i);
-                  hold on;
-                  switch Ptype
-                     case 'RAW'
-                        p{i} = plot(xdays,plotD(:,i),'Color',c(i,:),'LineWidth',1.3);
-
-                     case 'MMean'
-
-                  end
-                  if (delEMG(i))
-                      delete(p{i});
-                  end
-              end
-              if j==4
-                 FCU_A = plotD(:,[4 3 10 11]);
-              elseif j==3
-                 FDSdist_A = plotD(:,[4 3 10 11]);
-              elseif j==10
-                 EDCdist_A = plotD(:,[4 3 10 11]);
-              elseif j==11
-                 ED23_A = plotD(:,[4 3 10 11]);
-              end
-              plot([TCD TCD],[-1 1],'k--','LineWidth', 1.3);
-              % area for disable term
-              fi2 = fill([xnoT xnoT(end:-1:1)],[ones(size(xnoT)) (-1).*ones(size(xnoT))],'k','LineWidth',1.3);
-              fi2.FaceColor = [1 1 1];       % make the filled area
-    %           fi2.EdgeColor = 'none';            % remove the line around the filled area
-              hold off;
-    %            if(delSyn(1))
-    %               delete([p{2},p{3},p{4}]);
-    %            end
-    %            if(delSyn(2))
-    %               delete([p{1},p{7},p{8},p{9}]);
-    %            end
-    %            if(delSyn(3))
-    %               delete([p{10},p{11},p{12}]);
-    %            end
-    %            if(delSyn(4))
-    %               delete([p{5},p{6}]);
-    %            end
-              ylim([-1 1]);
-          %     xlim([0 81]);
-              xlim([xPre4days(1) xdays(end)]);
-          %     xlim([xdays(1) xdays(end)]);
-          %     ylabel('Cross-correlation coefficient');
-          %     xlabel('Post tendon transfer [days]');
-              title(EMGs{j,1},'FontSize',25);
-              if j==12
-                  L = legend({'Control','Task Disable','FCU','FDSdist','EDCdist','ED23'},'Location','southwest');
-                  set(L,...
-                      'Position',[0.914849183342953 0.120910384068279 0.0556196623180075 0.0803628093101775],...
-                      'FontSize',14);
-                  ylabel('Cross-correlation coefficient');
-                  xlabel('Post tendon transfer [days]');
-              end
-          %     legend1 = legend(EMGs{:,1});
-          %     set(legend1,...
-          %     'Position',[0.914849183342953 0.120910384068279 0.0776196623180075 0.803628093101775],...
-          %     'FontSize',14);
-              if save_fig == 1
-                 cd TaskAllXcorr_syn1-3
-                 saveas(gcf,[EMGs{j,1} '_Xcorr_TaskAll.epsc']);
-                 saveas(gcf,[EMGs{j,1} '_Xcorr_TaskAll.png']);
-                 saveas(gcf,[EMGs{j,1} '_Xcorr_TaskAll.fig']);
-                 cd ../
-              end
-          end
-
-       case 'Synergy'
-          TarN = 4;
-          sp=1;                %for subplot
-          order_s = [2 1 4 3];
-          f = figure('Position',[0 0 2000 250]);
-          syn1A = zeros(4,80);
-          syn2A = zeros(4,80);
-          syn3A = zeros(4,80);
-          syn4A = zeros(4,80);
-          for j=order_s%1:TarN
-               eval(['plotD = cell2mat(Re.syn' sprintf('%d',j) ');']);
-               subplot(1,4,sp);
-               sp = sp +1;
-          %      f = figure;
-               hold on;
-               % area for control data
-               fi1 = fill([xPre4days xPre4days(end:-1:1)],[ones(size(xPre4days)) (-1).*ones(size(xPre4days))],'k');
-               fi1.FaceColor = [0.78 0.78 0.78];       % make the filled area
-               fi1.EdgeColor = 'none';            % remove the line around the filled area
-    % %            % area for disable term
-    % %            fi2 = fill([xnoT xnoT(end:-1:1)],[ones(size(xnoT)) (-1).*ones(size(xnoT))],'k');
-    % %            fi2.FaceColor = [0.5 0.5 0.6];       % make the filled area
-    % %            fi2.EdgeColor = 'none';            % remove the line around the filled area
-               p = cell(TarN,1);
-               hold off;
-               spp = 1;
-              for i = order_s%1:TarN
-          %         subplot(TarN,TarN,TarN*(j-1)+i);
-                  hold on;
-                  switch Ptype
-                     case 'RAW'
-                        p{i} = plot(xdays,plotD(:,i),'Color',c(spp,:),'LineWidth',1.3);
-                        if j==2
-                           syn1A(spp,:) = plotD(:,i);
-                        elseif j==1
-                           syn2A(spp,:) = plotD(:,i);
-                        elseif j==4
-                           syn3A(spp,:) = plotD(:,i);
-                        elseif j==3
-                           syn4A(spp,:) = plotD(:,i);
-                        end
-                     case 'MMean'
-
-                  end
-                  spp = spp +1;
-              end
-              plot([TCD TCD],[-1 1],'k--','LineWidth', 1.3);
-              % area for disable term
-              fi2 = fill([xnoT xnoT(end:-1:1)],[ones(size(xnoT)) (-1).*ones(size(xnoT))],'k','LineWidth',1.3);
-              fi2.FaceColor = [1 1 1];       % make the filled area
-    %           fi2.EdgeColor = 'none';            % remove the line around the filled area
-              hold off;
-               if(delSyn(1))
-                  delete(p{1});
-               end
-               if(delSyn(2))
-                  delete(p{2});
-               end
-               if(delSyn(3))
-                  delete(p{3});
-               end
-               if(delSyn(4))
-                  delete(p{4});
-               end
-              ylim([-1 1]);
-          %     xlim([0 81]);
-              xlim([xPre4days(1) xdays(end)]);
-          %     xlim([xdays(1) xdays(end)]);
-          %     ylabel('Cross-correlation coefficient');
-          %     xlabel('Post tendon transfer [days]');
-              title(['Synergy' sprintf('%d',order_s(j))],'FontSize',25);
-              if j==TarN
-                  L = legend({'Control','Synergy1','Synergy2','Synergy3','Synergy4','Recovered','Task Disable'},'Location','southwest');
-                  set(L,...
-                      'Position',[0.914849183342953 0.120910384068279 0.0556196623180075 0.0803628093101775],...
-                      'FontSize',14);
-                  ylabel('Cross-correlation coefficient');
-                  xlabel('Post tendon transfer [days]');
-              end
-          %     legend1 = legend(EMGs{:,1});
-          %     set(legend1,...
-          %     'Position',[0.914849183342953 0.120910384068279 0.0776196623180075 0.803628093101775],...
-          %     'FontSize',14);
-              if save_fig == 1
-                 cd TaskAllXcorr_syn1-3
-                 saveas(gcf,[EMGs{j,1} '_Xcorr_TaskAll.epsc']);
-                 saveas(gcf,[EMGs{j,1} '_Xcorr_TaskAll.png']);
-                 saveas(gcf,[EMGs{j,1} '_Xcorr_TaskAll.fig']);
-                 cd ../
-              end
-          end
-
-    end
-end
 %% plot Xcorr Each
 if plot_each == 1
     switch Tar
        case 'EMG'
-          for t = 1:4 %trig loop 
-    %       f = figure('Position',[0 0 2000 1000]);
-          k = 1;
-          switch plotFocus
-            case 'off'
-               eval(['f' sprintf('%d',k) '= figure(''Position'',[0 0 2000 1000]);']);
-               Jloop = 1:12;
-            case 'on'
-               if t==1
-                  fe = figure('Position',[0 0 2000 1000]);
-               else
-                  figure(fe)
+          % 図の構造体の作成
+           figure_str = struct;
+           [EMG_num, ~] = size(EMGs);
+           figure_num = ceil(EMG_num/4);  % 作成する図の数 
+           for ii = 1:figure_num
+                eval(['figure_str.f' sprintf('%d',ii) '= figure(''Position'',[0 0 ' num2str(300 * length(plot_timing)) ' 1000]);']);
+           end
+           
+           for t = plot_timing %タイミングごとにloop
+        %       f = figure('Position',[0 0 2000 1000]);
+              k = 1;  % 使い道が謎ではあるが,重要そう
+              switch plotFocus
+                case 'off'
+%                        % 図の構造体の作成
+%                        figure_str = struct;
+%                        [EMG_num, ~] = size(EMGs);
+%                        figure_num = ceil(EMG_num/4);  % 作成する図の数 
+%                        for ii = 1:figure_num
+%                             eval(['figure_str.f' sprintf('%d',ii) '= figure(''Position'',[0 0 ' num2str(300 * length(plot_timing)) ' 1000]);']);
+%                        end
+                       Jloop = 1:EMG_num;   %筋肉の, プロットする順番
+                    case 'on'
+                       if t==1
+                          fe = figure('Position',[0 0 2000 1000]);
+                       else
+                          figure(fe)
+                       end
+                       Jloop = [4 3 10 11];
                end
-               Jloop = [4 3 10 11];
-          end
-          for j=Jloop % EMG loop
-               eval(['plotDe = ResE.T' sprintf('%d',t) ';']);
-               switch plotFocus
-                  case 'off'
-                     subplot(3,4,j);
-                  case 'on'
-                     subplot(4,4,4*(k-1)+t);
-                     k = k+1;
-               end
-
-          %      f = figure;
-               hold on;
-               % area for control data
-               fi1 = fill([xPre4days xPre4days(end:-1:1)],[ones(size(xPre4days)) (-1).*ones(size(xPre4days))],'k');
-               fi1.FaceColor = [0.78 0.78 0.78];       % make the filled area
-               fi1.EdgeColor = 'none';            % remove the line around the filled area
-    % %            % area for disable term
-    % %            fi2 = fill([xnoT xnoT(end:-1:1)],[ones(size(xnoT)) (-1).*ones(size(xnoT))],'k');
-    % %            fi2.FaceColor = [0.5 0.5 0.6];       % make the filled area
-    % %            fi2.EdgeColor = 'none';            % remove the line around the filled area
-               hold off;
-               p = cell(12,1);
-              for i = 1:12 %EMG control loop
-                 spp =1;
-          %         subplot(12,12,12*(j-1)+i);
-                  hold on;
-          %         p{i} = plot(xdays,plotDe{j}(i,:),'Color',c(i,:),'LineWidth',1.3);
-                  switch Ptype
-                     case 'RAW'
-                        p{i} = plot(xdays,plotDe{j}(i,:),'Color',c(i,:),'LineWidth',1.3);
-                     case 'MMean'
-          %               ps{i} = scatter(xdays,plotDe{j}(i,:));
-                        p{i} = plot(xdays,conv2(plotDe{j}(i,:),kernel,'same'),'Color',c(i,:),'LineWidth',1.3);
+              for j=Jloop % 順番に各筋肉のx_corrをプロットしていく 
+                   eval(['plotDe = ResE.T' sprintf('%d',t) ';']);  % タイミングtのデータを取り出す
+                   switch plotFocus
+                      case 'off'
+                            page_num = ceil(j/4);  %何枚目の図にプロット?
+                            eval(['figure(figure_str.f'  num2str(page_num) ')']) %図をgcfにする
+                            height_num = j - (page_num-1) * 4;  %上から何番目にプロット?
+                            location_num = length(plot_timing) * (height_num-1) + find(t==plot_timing);
+                            subplot(4, length(plot_timing), location_num)
+                      case 'on'
+                         subplot(4,4,4*(k-1)+t);
+                         k = k+1;
+                   end
+    
+              %      f = figure;
+                   hold on;
+                   % area for control data %コントロールデータのエリアを灰色に染める
+                   fi1 = fill([xPre4days xPre4days(end:-1:1)],[ones(size(xPre4days)) (-1).*ones(size(xPre4days))],'k'); %よくわからないけど重要
+                   fi1.FaceColor = [0.78 0.78 0.78];       % make the filled area
+                   fi1.EdgeColor = 'none';            % remove the line around the filled area
+                   hold off;
+                   p = cell(12,1);
+                  for i = j %1:12 %control vs each_dayのeach_dayの方の筋肉(今回は同じ筋肉同士のみが見たいので,i = j)
+                     spp =1;
+                      hold on;
+                      switch Ptype
+                         case 'RAW'
+                            p{i} = plot(xdays,plotDe{j}(i,:),'LineWidth',1.3);
+                         case 'MMean'
+                            p{i} = plot(xdays,conv2(plotDe{j}(i,:),kernel,'same'),'Color',c(i,:),'LineWidth',1.3);
+                      end
+%                       if (delEMG(i))  % よくわからない(plotしたものを消す?)
+%                           delete(p{i});
+%                       end
                   end
-                  if (delEMG(i))
-                      delete(p{i});
-                  end
+                  spp = spp+1;
+                  plot([TCD TCD],[-1 1],'k--','LineWidth', 1.3);
+                  % 計測不能の部分を白boxで囲む
+                  fi2 = fill([xnoT xnoT(end:-1:1)],[ones(size(xnoT)) (-1).*ones(size(xnoT))],'k','LineWidth',1.3); 
+                  fi2.FaceColor = [1 1 1];       % make the filled area
+        %           fi2.EdgeColor = 'none';            % remove the line around the filled area
+                  hold off;
+                  % decoration
+                  ylim([-1 1]);
+                  xlim([xPre4days(1) xdays(end)]);
+                  title([EMGs{j,1} ' ' title_name{t}],'FontSize',15);
               end
-              if t ==1    %%%%%%%%%%%%%%%%%%%% trigger %%%%%%%%%%%%%%%%%
-                 if j==4
-                    FCU_A = plotDe{j}([4 3 10 11],:);
-                 elseif j==3
-                    FDSdist_A = plotDe{j}([4 3 10 11],:);
-                 elseif j==10
-                    EDCdist_A = plotDe{j}([4 3 10 11],:);
-                 elseif j==11
-                    ED23_A = plotDe{j}([4 3 10 11],:);
-                 end
-              end
-              spp = spp+1;
-              plot([TCD TCD],[-1 1],'k--','LineWidth', 1.3);
-               % area for disable term
-              fi2 = fill([xnoT xnoT(end:-1:1)],[ones(size(xnoT)) (-1).*ones(size(xnoT))],'k','LineWidth',1.3);
-              fi2.FaceColor = [1 1 1];       % make the filled area
-    %           fi2.EdgeColor = 'none';            % remove the line around the filled area
-              hold off;
-               if(delSyn(1))
-                  delete([p{2},p{3},p{4}]);
+           end
+           % 図の保存
+           if save_fig == 1
+               %save_foldの作成
+               save_fold = 'EachPlot/x_corr_result/EMG';
+               save_fold_path = fullfile(pwd, save_fold);
+               if not(exist(save_fold_path))
+                   mkdir(save_fold_path)
                end
-               if(delSyn(2))
-                  delete([p{1},p{7},p{8},p{9}]);
+               %図を一枚ずつ保存
+               for ii = 1:figure_num
+                    eval(['figure(figure_str.f'  num2str(ii) ')'])
+                    saveas(gcf, [save_fold_path '/' 'EMG_xcorr(' num2str(EMG_num) 'muscle)_page' num2str(ii) '.fig'])
+                    saveas(gcf, [save_fold_path '/' 'EMG_xcorr(' num2str(EMG_num) 'muscle)_page' num2str(ii) '.png'])
                end
-               if(delSyn(3))
-                  delete([p{10},p{11},p{12}]);
-               end
-               if(delSyn(4))
-                  delete([p{5},p{6}]);
-               end
-              ylim([-1 1]);
-              xlim([xPre4days(1) xdays(end)]);
-          %     xlim([xdays(1) xdays(end)]);
-          %     xlim([0 81]);
-              title(EMGs{j,1},'FontSize',25);
-              if j==12
-                  L = legend({'Control','Task Disable','FCU','FDSdist','EDCdist','ED23'},'Location','southwest');
-          %         legend1 = legend(axes1,'show');
-                  set(L,...
-                      'Position',[0.914849183342953 0.120910384068279 0.0556196623180075 0.0803628093101775],...
-                      'FontSize',14);
-                  ylabel('Cross-correlation coefficient');
-                  xlabel('Post tendon transfer [days]');
-              end
-          %     legend1 = legend(EMGs{:,1});
-          %     set(legend1,...
-          %     'Position',[0.914849183342953 0.120910384068279 0.0776196623180075 0.803628093101775],...
-          %     'FontSize',14);
-              if save_fig == 1
-                 cd TaskAllXcorr_syn1-3
-                 saveas(gcf,[EMGs{j,1} '_Xcorr_TaskAll.epsc']);
-                 saveas(gcf,[EMGs{j,1} '_Xcorr_TaskAll.png']);
-                 saveas(gcf,[EMGs{j,1} '_Xcorr_TaskAll.fig']);
-                 cd ../
-              end
-          end
-          end
-
+           end
+           close all
+       %% case of synergy analysis
        case 'Synergy'
-          TarN =4;
+          TarN =4; %シナジー数
           %↓t:T2~T3のプロット(food onとfood off (tim1,tim4は不要なので排除))
-          for t = plot_timing(1):plot_timing(2) %1:TarN %trig loop 
+          for t = plot_timing %1:TarN %trig loop 
         %       f = figure('Position',[0 0 2000 1000]);
               k = 1;
               switch plotFocus
                     case 'off'
-                       if t == 2 %1回目のループの時 
-                            eval(['f' sprintf('%d',k) '= figure(''Position'',[0 0 1400 2000]);']);
+                       if t == plot_timing(1) %1回目のループの時,figureを作成 
+                            eval(['f' sprintf('%d',k) '= figure(''Position'',[0 0 ' num2str(300 * length(plot_timing)) ' 1000]);']);
                        end
                        Jloop = 1:TarN;
                     case 'on'
@@ -477,7 +292,7 @@ if plot_each == 1
                        end
                        Jloop = [2 1 4 3];
               end
-              for j=Jloop % EMG loop
+              for j=Jloop %jは「シナジーjのコントロールに対する」を表している
                    eval(['plotDe = ResE.T' sprintf('%d',t) ';']);
                    if j == 1
                        for pp = 1:4
@@ -486,7 +301,9 @@ if plot_each == 1
                    end
                    switch plotFocus
                       case 'off'
-                         subplot(TarN,2,(2*j)-(3-t)); %2と(2*j)はタイミングの数(T2とT3),(3-t)の3はtの一番最後の要素の値を示している
+%                          subplot(TarN,2,(2*j)-(plot_timing(2)-t)); %2と(2*j)はタイミングの数(T2とT3),(plot_timing(2)-t)のplot_timing(2)はtの一番最後の要素の値を示している
+                           timing_num = length(plot_timing);
+                           subplot(TarN,length(plot_timing), timing_num*(j-1) + find(t == plot_timing)); %2と(2*j)はタイミングの数(T2とT3),(plot_timing(2)-t)のplot_timing(2)はtの一番最後の要素の値を示している
                       case 'on'
                          subplot(TarN,4,4*(k-1)+t);
                          k = k+1;
@@ -511,7 +328,7 @@ if plot_each == 1
               %         p{i} = plot(xdays,plotDe{j}(i,:),'Color',c(i,:),'LineWidth',1.3);
                       switch Ptype
                          case 'RAW'
-                            p{i} = plot(xdays,plotDe{j}(i,:),'Color',c(spp,:),'LineWidth',1.3);
+                            p{i} = plot(xdays,plotDe{j}(i,:),'Color',c(spp,:),'LineWidth',1.3, 'DisplayName',['Synergy' num2str(i)]);
                             %{
                             syn1A~syn4Aが、これ以降のセクションで使用されていないので、コメントアウトした
                             if t == 1
@@ -555,35 +372,31 @@ if plot_each == 1
                   xlim([xPre4days(1) xdays(end)]);
               %     xlim([xdays(1) xdays(end)]);
               %     xlim([0 81]);
-                  if t==plot_timing(1) 
-                      title([title_name{t} ' Synergy' num2str(j)],'FontSize',15);
-                  elseif t==plot_timing(2) 
-                      title([title_name{t} ' Synergy' num2str(j)],'FontSize',15);
-                  end
+                  title([title_name{t} ' Synergy' num2str(j)]);
                   %title(['vs Syn' num2str(j) '(T' num2str(t) ')'],'FontSize',25);
                   if j == TarN
-                      ylabel('Cross-correlation coefficient','FontSize',15);
-                      xlabel('Post tendon transfer [days]','FontSize',15);
-                      if t==3
-                          if length(vidual_syn) == 2 %シナジー2とシナジー4のみを図示
-                             L = legend({'Control',['synergy' num2str(vidual_syn(1))],['synergy' num2str(vidual_syn(2))],'Task Disable'},'Location','southwest');
-                          elseif length(vidual_syn) == 4 %全部のシナジーを図示
-                             L = legend({'Control','Synergy1','Synergy2','Synergy3','Synergy4','Task Disable'},'Location','southwest');
-                          end
-                          set(L,...
-                              'Position',[0.923 0.120910384068279 0.0556196623180075 0.0803628093101775],...
-                              'FontSize',12);
-                      end
+                      ylabel('Cross-correlation coefficient');
+                      xlabel('Post tendon transfer [days]');
                   end
               end
           end
+          % legend用に使用するlineをまとめる
+          count = 1;
+          for ii = 1:length(p)
+              if ~isempty(p{ii})
+                  a(count) = p{ii};
+                  count = count+1;
+              end
+          end
+          lgd = legend(a([1:end]));
+          lgd.FontSize = 8;
           %save figure
           if save_fig == 1
               save_dir = ['EachPlot/x_corr_result/' synergy_combination];
               if not(exist(save_dir))
                   mkdir(save_dir)
               end
-              fig_name = [save_dir '/' num2str(TarN) 'syn_' num2str(length(vidual_syn)) 'plot_2timing'];
+              fig_name = [save_dir '/' num2str(TarN) 'syn_' num2str(length(vidual_syn)) 'plot_' num2str(length(plot_timing)) 'timing'];
               saveas(gcf,[fig_name '.fig']);
               saveas(gcf,[fig_name '.png']);
           end
@@ -598,15 +411,3 @@ if plot_each == 1
           end
     end
 end
-% function createlegend(axes1)
-% %CREATELEGEND(axes1)
-% %  AXES1:  legend axes
-% 
-% %  MATLAB ????????????????: 20-Jun-2019 12:49:20
-% 
-% % legend ??????
-% legend1 = legend(axes1,'show');
-% set(legend1,...
-%     'Position',[0.914849183342953 0.120910384068279 0.0776196623180075 0.803628093101775],...
-%     'FontSize',14);
-% end

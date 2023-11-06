@@ -39,8 +39,8 @@ switch monkeyname
         real_name = 'Suruku';
         timing_photo = 1;
     case 'Se'
-        %real_name = 'SesekiL';
-        real_name = 'SesekiR';
+        real_name = 'SesekiL';
+%         real_name = 'SesekiR';
         timing_photo = 1;
 %         arm = 'L';
 end
@@ -48,8 +48,9 @@ end
 xpdate = sprintf('%d',xpdate_num);
 cd(real_name)
 cd(save_fold)
-% if not(exist([monkeyname xpdate '_' task]))
-mkdir([monkeyname xpdate '_' task]);
+if not(exist(fullfile(pwd, [monkeyname xpdate '_' task])))
+    mkdir([monkeyname xpdate '_' task]);
+end
 cd ../
 disp(['START TO MAKE & SAVE ' monkeyname xpdate 'file[' sprintf('%d',file_num(1)) ',' sprintf('%d',file_num(end)) ']']);
 %EMG set
@@ -154,7 +155,7 @@ switch monkeyname
         a = cummax(selEMGs,'reverse');
         EMG_num = a(1,1);
         make_ECoG = 0;
-        arm = 'R';
+        arm = 'L';
         if exist('arm')
            for m = 1:12
               EMGs{m}=[EMGs{m} '_' arm];

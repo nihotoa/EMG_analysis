@@ -1,17 +1,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
-【補足】
-変数synergy_orderについて
+【補足】 変数synergy_orderについて
 生成した時間シナジーの図などから、preとpostのシナジーの対応関係を明示する(ex.)preのシナジー１はpostのシナジー3と等しい
-(synergy_orderの設定例)
-   pre  ->  post
-シナジー1 = シナジー4
-シナジー2 = シナジー2
-シナジー3 = シナジー1
-シナジー4 = シナジー3
-の場合には
-synergy_order = [4 2 1 3];
-と設定する
+(synergy_orderの設定例) pre  ->  post シナジー1 = シナジー4 シナジー2 = シナジー2 シナジー3 = シナジー1
+シナジー4 = シナジー3 の場合には synergy_order = [4 2 1 3]; と設定する
 シナジーの照合のセクション(217~230行目まで)をTim3だけじゃなく、他のタイミングにも適用する
 
 【課題】
@@ -20,45 +12,51 @@ synergy_order = [4 2 1 3];
 ・ローカル関数のEachXcorrの処理内容の確認
 ・一通りできたけどResEの値がおかしいので,図示して確認する(時間シナジーの図ではほとんど同じ概形にもかかわらずコントロールデータとpostの後期の相互相関の値が低すぎる(ほぼ0))
 →おそらく、preのシナジー１とpostのシナジー1が異なっていることが原因 →おかしいと思われる部分をピックアップして図示し,パワポの図と比較する
-・めちゃめちゃ冗長な部分を簡潔にする
-【procedure】
-pre : plotTarget.m
-post : plotXcorr
+・めちゃめちゃ冗長な部分を簡潔にする 【procedure】 pre : plotTarget.m post : plotXcorr
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [Re,ResE] = calcXcorr()
+%% set param 
 clear;
-Tar = 'Synergy';           %'EMG','Synergy'
+Tar = 'EMG';           %'EMG','Synergy'
 save_data = 1;
-pre_data_num = 4;
+pre_num = 4;  %control dataの数(0516, 0517, 0524, 0526)
 %preとpostのシナジー番号を合わせるもの,(これをしないと,x_corrの値が混じってしまう)
-synergy_order = [1,2,3,4];
+synergy_order = [3 1 2 4];
 timing_num = 4; %EachXcorrで計算するタイミングデータの個数(ex.)タイミングがT1~T4まであった場合は4にする
 
 
+%% code section 
 switch Tar
    case 'EMG'
       TarN = 12;           %EMG num
+      %これ以降
       [D,conD,EMGs] = LoadCorrData(Tar);
+      [~,selected_day_num] = size(D.FDP_L);
       Co = cell2mat(conD);
       Sco = size(Co);
       s = 2*Sco(1) - 1;
-      for i = 1:12
+      for i = 1:length(EMGs)
+         %　比較される方(control data)
          eval(['Re.' EMGs{i,1} '= cell(1,12);']); 
-      %    eval(['Re.' EMGs{i,1} '{1,i}= zeros(s,81);']);
-         for k = 1:12
-             eval(['Re.' EMGs{i,1} '{1,k}= zeros(81,1);']);
-             for j = 1:81
+         for k = 1:length(EMGs)
+             eval(['Re.' EMGs{i,1} '{1,k}= zeros(' num2str(selected_day_num) ',1);']);
+             for j = 1:selected_day_num
                  eval([ 'Alt = corrcoef(D.' EMGs{i} '(:,j), Co(:,k));']);
-                     eval(['Re.' EMGs{i,1} '{1,k}(j) = Alt(1,2);']);
-      %           eval(['[Re.' EMGs{i,1} '{1,k}(:,j),x] = xcorr(D.' EMGs{i} '(:,j), Co(:,k),''coeff'');']);
+                 eval(['Re.' EMGs{i,1} '{1,k}(j) = Alt(1,2);']);
              end
          end
       end
-      ResE = EachXcorr(TarN);
+    %ここまでいらない
+    %↓ここが必要
+      ResE = EachXcorr(TarN,pre_num,timing_num);
+      if save_data == 1
+          save(['ResultXcorr_' num2str(selected_day_num) '_EMG' num2str(TarN) '.mat'],'D','Sco','EMGs','Re','Tar');  %一応使っている体だけど，使ってない
+          save(['ResultXcorr_each_' num2str(selected_day_num) '_EMG' num2str(TarN) '.mat'],'ResE');
+      end
    case 'Synergy'
       TarN = 4;            %Synergy num
-      used_muscle = {'FDP';'FDSdist';'FCU';'PL';'FCR';'BRD';'ECR';'EDCdist';'ED23';'ECU'};
+      used_muscle = {'FDP';'FDSdist'; 'FDSprox';'FCU';'PL';'FCR';'BRD';'ECR';'EDCdist';'EDCprox';'ED23';'ECU'};
 %       s_order = [2 1 4 3];
       [D,conD,EMGs] = LoadCorrData(Tar,used_muscle);
       [~,selected_day_num] = size(D.syn1);
@@ -79,7 +77,7 @@ switch Tar
          end
       end
       %↓タスク全体ではなくて、各タイミング周りのトリミングデータから相関係数を求める
-      ResE = EachXcorr(4,pre_data_num,synergy_order,timing_num);
+      ResE = EachXcorr(TarN,pre_num,timing_num, synergy_order);
       %plotXcorr用にデータをセーブ
       if save_data == 1
           save(['ResultXcorr_' num2str(selected_day_num) '_syn' num2str(TarN) '.mat'],'D','Sco','EMGs','Re','Tar');
@@ -92,66 +90,39 @@ end
 function [D,conD,E] = LoadCorrData(Tar,used_muscle)
 switch Tar
    case 'EMG'
-      DD = load('AllDataforXcorr_80.mat');
+      disp('please select AllDataforXcorr_~.mat file (which you want to calcurate x_corr)')
+      selected_file = uigetfile('*.mat',...
+                     'Select One or More Files', ...
+                     'MultiSelect', 'on');
+%       DD = load('AllDataforXcorr_80.mat');
+      DD = load(selected_file);
       conData = DD.plotData_sel{1,1}';
 
       S1 = size(conData);
       S2 = size(DD.Allfiles);
       S = [S1(1) S2(2)];
-
-      D.FDP = zeros(S);
-      D.FDSprox = zeros(S);
-      D.FDSdist = zeros(S);
-      D.FCU = zeros(S);
-      D.PL = zeros(S);
-      D.FCR = zeros(S);
-      D.BRD = zeros(S);
-      D.ECR = zeros(S);
-      D.EDCprox = zeros(S);
-      D.EDCdist = zeros(S);
-      D.ED23 = zeros(S);
-      D.ECU = zeros(S);
-
-      for i = 1:S(2)
-         D.FDP(:,i) = DD.plotData_sel{i,1}(1,:)';
-         D.FDSprox(:,i) = DD.plotData_sel{i,1}(2,:)';
-         D.FDSdist(:,i) = DD.plotData_sel{i,1}(3,:)';
-         D.FCU(:,i) = DD.plotData_sel{i,1}(4,:)';
-         D.PL(:,i) = DD.plotData_sel{i,1}(5,:)';
-         D.FCR(:,i) = DD.plotData_sel{i,1}(6,:)';
-         D.BRD(:,i) = DD.plotData_sel{i,1}(7,:)';
-         D.ECR(:,i) = DD.plotData_sel{i,1}(8,:)';
-         D.EDCprox(:,i) = DD.plotData_sel{i,1}(9,:)';
-         D.EDCdist(:,i) = DD.plotData_sel{i,1}(10,:)';
-         D.ED23(:,i) = DD.plotData_sel{i,1}(11,:)';
-         D.ECU(:,i) = DD.plotData_sel{i,1}(12,:)';
+      
+      %筋肉がこの順番で合っているのか不明
+      disp('Please select an appropriate pdata(any is fine) (location:Yachimun -> easyData-> Pdata)')
+      [file, path] = uigetfile('*Pdata.mat');
+      load(fullfile(path, file), 'EMGs')
+      for ii = 1:length(EMGs)
+          eval(['D.' EMGs{ii,1} ' = zeros(S);']);
       end
-      conD = cell(1,12);
-      conD{1} = mean(D.FDP(:,1:21),2);
-      conD{2} = mean(D.FDSprox(:,1:21),2);
-      conD{3} = mean(D.FDSdist(:,1:21),2);
-      conD{4} = mean(D.FCU(:,1:21),2);
-      conD{5} = mean(D.PL(:,1:21),2);
-      conD{6} = mean(D.FCR(:,1:21),2);
-      conD{7} = mean(D.BRD(:,1:21),2);
-      conD{8} = mean(D.ECR(:,1:21),2);
-      conD{9} = mean(D.EDCprox(:,1:21),2);
-      conD{10} = mean(D.EDCdist(:,1:21),2);
-      conD{11} = mean(D.ED23(:,1:21),2);
-      conD{12} = mean(D.ECU(:,1:21),2);
-      % conD.FDP = mean(D.FDP(:,1:21),2);
-      % conD.FDSprox = mean(D.FDSprox(:,1:21),2);
-      % conD.FDSdist = mean(D.FDSdist(:,1:21),2);
-      % conD.FCU = mean(D.FCU(:,1:21),2);
-      % conD.PL = mean(D.PL(:,1:21),2);
-      % conD.FCR = mean(D.FCR(:,1:21),2);
-      % conD.BRD = mean(D.BRD(:,1:21),2);
-      % conD.ECR = mean(D.ECR(:,1:21),2);
-      % conD.EDCprox = mean(D.EDCprox(:,1:21),2);
-      % conD.EDCdist = mean(D.EDCdist(:,1:21),2);
-      % conD.ED23 = mean(D.ED23(:,1:21),2);
-      % conD.ECU = mean(D.ECU(:,1:21),2);
-      E = DD.EMGs;
+
+      for ii = 1:length(EMGs)
+          for jj = 1:S(2)
+              eval(join(["D." EMGs{ii} "(:,jj) = DD.plotData_sel{jj,1}(ii,:)';"]));
+             % D.FDP(:,jj) = DD.plotData_sel{jj,1}(ii,:)';
+          end
+      end
+      % よくわからない
+      conD = cell(1,length(EMGs));
+      for ii = 1:length(EMGs)
+          eval(['conD{' num2str(ii) '} = mean(D.' EMGs{ii} '(:,1:21),2);'])
+          % conD{6} = mean(D.FCR(:,1:21),2);
+      end
+      E = EMGs;
       
    case 'Synergy'
       disp('please select AllDataforXcorr_~.mat file (which you want to calcurate x_corr)')
@@ -187,7 +158,8 @@ switch Tar
       E = DD.EMGs;
 end
 end
-function [Re] = EachXcorr(TarN,pre_num,synergy_order,timing_num)
+%% function1
+function [Re] = EachXcorr(TarN,pre_num,timing_num, synergy_order)
 % DD = load('DataSetForEachXcorr_80_syn_Range2.mat');
 disp('please select DataSetforEachXcorr_~.mat file (which you want to calcurate x_corr)')
 selected_file = uigetfile('*.mat',...
@@ -197,11 +169,14 @@ DD = load(selected_file);
 %↓各タイミングでの、それぞれの時間シナジーのx_corrを計算
 for ii = 1:timing_num
     eval(['Re.T' num2str(ii) ' = calEXcorr(DD.TrigData_Each.T' num2str(ii) ',TarN);']) %Re.T3 = calEXcorr(DD.TrigData_Each.T3,TarN);
-    Re = align_syn(TarN,Re,pre_num,synergy_order,ii);
+    if nargin == 4
+        Re = align_syn(TarN,Re,pre_num,synergy_order,ii);
+    end
 end
 
 end
 
+%% function2
 function [Result] = calEXcorr(T,TarN)
 S = size(T.data);
 Result = cell(TarN,1); 
@@ -218,6 +193,7 @@ for M = 1:TarN
 end
 end
 
+%% function3
 %preとpostのシナジーを合わせるための関数(後で作る)
 function Re = align_syn(TarN,Re,pre_num,synergy_order,timing_num)
     %↓T3同じ構造の変数を作り、そこに正しい値を代入して行く
