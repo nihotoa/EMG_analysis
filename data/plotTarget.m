@@ -20,7 +20,7 @@
 [procedure]
 pre : MakeDataForPlot_H_utb.m
 post : calcXcorr.m(if you want to calculate & plot Xcorr) 【place】: /Volumes/Untitled/MATLAB/data/Yachimun/easyData/P-DATA(old filter TTakei delayed)
-       or calcVAF.m(to calculate the contribution of each synergy)
+       or calVAF.m(to calculate the contribution of each synergy)
 (+a):When you want to check the H_synergy of each synergy cut out at each timing at once, use plotSynergy.m (contained in 'data' fold).
 [改善点]
 plotに使ったEMGデータ(Pall, Ptrig1...)がどこに保存されるのかをinformationとして書く
@@ -37,8 +37,8 @@ clear
 %Ptrig2 : Averaged dataset on each session -50:50%(triggered at hold_on2)
 %Ptrig3 : Averaged dataset on each session -25:105%(triggered at hold_on1)
 
-realname = 'SesekiL'; %monkey name 'Yachimun'/'SesekiL'
-monkeyname = 'Se'; %prefix of Raw data(ex) 'Se' or 'Ya' or 'F'
+realname = 'Yachimun'; %monkey name 'Yachimun'/'SesekiL'
+monkeyname = 'F'; %prefix of Raw data(ex) 'Se' or 'Ya' or 'F'
 Tar = 'Synergy';  % the data which you want to plot -> 'EMG' or 'Synergy'
 save_fold = 'easyData';     % you don't need to change
 plot_fig = 1;               % wtherer you want to plot figures
@@ -51,10 +51,10 @@ CTC = 0;                    %plot Cross Talk(I don't confirm whether I can use t
 nomalizeAmp = 0;            %normalize Amplitude 
 YL = Inf;                   %(if nomalize Amp == 0) ylim of graph
 save_xcorr_data = 0;        %save data to use of plot x_corr
-nmf_fold_name = 'nmf_result'; %(if you want to plot synergy data) folder name of nmf_fold
+nmf_fold_name = 'new_nmf_result'; %(if you want to plot synergy data) folder name of nmf_fold
 plot_figure_type = 'default';  %'default' / 'forHara' プロットするfigureのタイプ.default:フツーのやつ.forHara:一つのタイミングのsubplotに全ての筋肉(pColor='K'の時にしか設定していない)
 eliminate_muscles = 0; %(if plot_figure_type=='forHara' & monkeyname== 'Se') if you want to ignore some muscles which is broken in post-section when you plot figures. 
-synergy_order = [3, 1, 4, 2];  %(pre1,2,3,4)に対応するpostのsynergy(Yachimun:[3,1,2,4], Seseki:[3,1,4,2])
+synergy_order = [4,2,1,3];  %(pre1,2,3,4)に対応するpostのsynergy(Yachimun:[4,2,1,3], Seseki:[3,1,4,2])
 %% code section
 switch monkeyname
    case 'F'

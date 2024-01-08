@@ -1,59 +1,57 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
-    カレントディレクトリをnew_nmf_resultにして実行すること
-    もう一つのMakeDataForPLot関数(こっちのほうが更新日時新しいから、おそらくこっちを使っていたと思われる)
-    こっちはdispNMF_Wを回していないと使えない(選ぶファイル(order_tim_list→Ya170630to170929→Ya170630to170929_45_4.mat)がdispNMF_Wによって得られるため)
-    MakeDataForPLotとの相違点 → トリミングするタイミングが一つ増えた
-    こちらの関数も同様に、一つしかシナジーをプロットしない。デフォルトでプロットしない設定になっていた。図をセーブする記述が見られない
-    ことから、大事なのはデータの保存であって、図は別の関数で保存されていると考えられる(PlotTarget.m?)
-     
-    [role of this code]
-    synDataの中に,H_syenrgyのplotに必要なデータを保存する(figureをプロットして保存する関数ではないことに注意する)
-    %やること:MakeDataForPLotとの相違点を明確にする
-    【相違点】
-    orderSyn_second.matを参照していない→これなしでできる！(このファイルの機能はYa170630to170929_45_4.matで補っている(変数OD))
-    【function】
-    save data which is related in displaying temporal synergy
-    saved location is new_nmf_result -> synData -> (ex.)YaSyn170630_Pdata.mat
-    【procedure】
-    pre_operate: dispNMF_W.m
-    post_operate: plotTarget.m
-    【caution!!!!】
-    please change group_num!!!!!!!
-    (変数group_numの値を適宜変更して!!!!)
-    【超大事!!!!!!!】
-    resampleのtoolboxを入れていないとエラー吐くので注意(signal processing toolboxってやつ)
-    codeにpath通してないとエラー吐く
+カレントディレクトリをnew_nmf_resultにして実行すること    
+【function】
+save data which is related in displaying temporal synergy
+saved location is new_nmf_result -> synData -> (ex.)YaSyn4170630_Pdata.mat
+【procedure】
+pre_operate: dispNMF_W.m
+post_operate: plotTarget.m
+【caution!!!!】
+please change group_num!!!!!!!
+(変数group_numの値を適宜変更して!!!!)
+【超大事!!!!!!!】
+resampleのtoolboxを入れていないとエラー吐くので注意(signal processing toolboxってやつ)
+codeにpath通してないとエラー吐く
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [Result,Allfiles] = MakeDataForPlot_H_utb()
-%% make data for corr
-monkeyname = 'F';
-%task = 'standard';
+%% set param
+monkeyname = 'F';  %  'F'/ 'Se'
+synergy_type = 'post';  % 'pre' / 'post'
 group_num = 2;
 Tsynergy = 4;
-disp('please select all "_standard.mat"(Yachimun -> easyData ->)') %(only use name part (no use contents))
-Allfiles_S = uigetfile(['*' 'standard.mat'],...
-                     'Select One or More Files', ...
-                     'MultiSelect', 'on');
+
+%% code section
+data_folders = dir(pwd);
+folderList = {data_folders([data_folders.isdir]).name};
+Allfiles_S = folderList(startsWith(folderList, monkeyname));
+switch synergy_type
+    case 'pre'
+        Allfiles_S = Allfiles_S(1:4);
+    case 'post'
+        Allfiles_S = Allfiles_S(5:end);
+end
+
 S = size(Allfiles_S);
-Allfiles = strrep(Allfiles_S,'_standard.mat','');
+Allfiles = strrep(Allfiles_S,'_standard','');
 AllDays = strrep(Allfiles,monkeyname,'');
+
+
 
 switch group_num
    case 1%control (FDP)
         EMG_num = 12;
-%         EMGs = {'BRD_1';'BRD_2';'ECR';'EDC';'FCR';'FCU';'FDPr'};
-    case 2 %太田解析用
+    case 2
         EMG_num = 10;
-         %EMGs = {'BRD';'ECR';'ECU';'ED45';'EDCdist';'FCR';'FCU';'FDP';'FDSdist';'PL'};  
 end
 
 c = jet(S(2));
 
-PLOTF = 'of'; %ただプロットするだけ(確認用だと思われ.セーブはしない)
+
 save_data = 1; %dataをセーブするときは1にする
-% Result = cell(S);
+
+%% code section
 allH = cell(S);
 cd order_tim_list
 disp('please select the file which was created in dispNMF_W.m(Yachimun -> new_nmf_result -> order_tim_list)')
@@ -62,21 +60,20 @@ cd(pat)
 OD = load(fName);
 cd ../../
 for J =1:S(2)     %session loop
-   if not(exist(fullfile(pwd, [Allfiles{J} '_standard/' Allfiles{J} '_syn_result_' sprintf('%02d',EMG_num) '/' Allfiles{J} '_H/'])))
-       mkdir([Allfiles{J} '_standard/' Allfiles{J} '_syn_result_' sprintf('%02d',EMG_num) '/' Allfiles{J} '_H/'])
-   end
-   cd([Allfiles{J} '_standard/' Allfiles{J} '_syn_result_' sprintf('%02d',EMG_num) '/' Allfiles{J} '_H/'])
-   K = load([Allfiles{J} '_aveH3_' sprintf('%d',Tsynergy) '.mat'],'k');
+   cd([Allfiles{J} '_standard' '/' Allfiles{J} '_syn_result_' sprintf('%02d',EMG_num) '/' Allfiles{J} '_H/'])
+   K = load([Allfiles{J} '_aveH3_' sprintf('%d',Tsynergy) '.mat'],'k');  % load the data of the procedure for arranging synergy (load 'k_arr')
    cd ../../
-%    TimSUC = load([Allfiles{J} '_SUC_Timing.mat']);
-   synergyData = load([Allfiles{J} '_' sprintf('%02d',EMG_num) '_nmf.mat'],'test');
+
+   synergyData = load([Allfiles{J} '_' sprintf('%02d',EMG_num) '_nmf.mat'], 'test');
    Hdata = synergyData.test.H; %各シナジー数でのHデータ(4分割)
    Wdata = synergyData.test.W; %各シナジー数でのWデータ(4分割)
    cd ../
-  
+
+   %↓4つのテストデータ同士を連結させる(順番を合わせるために,Kを使用する)，synergy_Wに関しては，4つのテストデータの平均を使用する
    altH = [Hdata{Tsynergy,1} Hdata{Tsynergy,2}(K.k(1,:)',:) Hdata{Tsynergy,3}(K.k(2,:)',:) Hdata{Tsynergy,4}(K.k(3,:)',:)];
    altW = (Wdata{Tsynergy,1} + Wdata{Tsynergy,2}(:,K.k(1,:)') + Wdata{Tsynergy,3}(:,K.k(2,:)') + Wdata{Tsynergy,4}(:,K.k(3,:)'))./Tsynergy;
-   
+
+   %↓testデータから作成した日毎のシナジーを揃えて収納する
    allH{J} = altH(OD.k_arr(:,find(OD.days==str2num(AllDays{J}))),:);
    allW{J} = altW(:,OD.k_arr(:,find(OD.days==str2num(AllDays{J}))));
 end
@@ -93,14 +90,18 @@ D.trig3_per = [50 50];
 D.trig4_per = [50 50];
 D.task_per = [25,105];
 for SS = 1:S(2) %session loop
+   if not(exist(fullfile(pwd, ['../easyData/' Allfiles{SS} '_standard'])))
+       mkdir(['../easyData/' Allfiles{SS} '_standard'])
+   end
    cd(['../easyData/' Allfiles{SS} '_standard'])
-   Timing = load([Allfiles{SS} '_EasyData.mat'],'Tp','Tp3','SampleRate');
+   Timing = load([Allfiles{SS} '_EasyData.mat'],'Tp','Tp3','SampleRate'); % load the timing data of each trial
    cd ../../new_nmf_result
-   tim = floor(Timing.Tp./(Timing.SampleRate/100));
+   tim = floor(Timing.Tp./(Timing.SampleRate/100)); %floor:切り捨て,タイミング信号を100Hzにダウンサンプリング
    ts = size(tim);
    pre_per = 50; % How long do you want to see the signals before hold_on 1 starts.
    post_per = 50; % How long do you want to see the signals after hold_off 2 starts.
    
+
    %↓alignedData:タスクごとの、時間正規化した時間シナジー  alignedDataAVE:時間正規化した時間シナジーの平均 All_T:トリミングしたサンプル数(正規化済み)
    [alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(allH{SS}',[], tim, ts(1),pre_per,post_per, Tsynergy);
    taskRange = [-1*pre_per, 100+post_per];
@@ -117,40 +118,6 @@ for SS = 1:S(2) %session loop
    D.LdTask = length(Res.tDataTask_AVE{1});
    D.RangeTask = D.task_per;
    eval(['Result.' Allfiles{SS} ' = Res;'])
-   switch PLOTF
-       case 'on'
-    %    if SS == 1
-    %        linspace(taskRange(1),taskRange(2),Pall.AllT_AVE);
-           f1 = figure('Position',[0 720 600 400]);
-           f2 = figure('Position',[600 720 600 400]);
-           f3 = figure('Position',[1200 720 600 400]);
-    %        FigA = cell();
-    %    end
-       figure(f1)
-       hold on
-       for t = 1:ts
-           plot(Res.tData1{1}(t,:),'k')
-       end
-       plot(mean(Res.tData1{1}),'Color',c(SS,:))
-       hold off
-       figure(f2)
-       hold on
-       for t = 1:ts
-           plot(Res.tData2{1}(t,:),'k')
-       end
-       plot(mean(Res.tData2{1}),'Color',c(SS,:))
-       hold off
-       figure(f3)
-       hold on
-       for t = 1:ts
-           plot(Res.tData3{1}(t,:),'k')
-       end
-       plot(mean(Res.tData3{1}),'Color',c(SS,:))
-       hold off
-       
-       case 'off'
-           %nothing
-   end
    
    % save data
    if save_data == 1
@@ -160,9 +127,7 @@ for SS = 1:S(2) %session loop
        ResAVE.tData4_AVE = Res.tData4_AVE;
        ResAVE.tDataTask_AVE = Res.tDataTask_AVE;
        xpdate = AllDays(SS);
-       if not(exist(fullfile(pwd, 'synData')))
-           mkdir 'synData';
-       end
+       mkdir 'synData';
        cd 'synData'
        save([monkeyname 'Syn' sprintf('%d',Tsynergy) AllDays{SS} '_Pdata.mat'], 'monkeyname','xpdate','D',...
                                                          'alignedDataAVE','ResAVE',...
@@ -173,7 +138,7 @@ for SS = 1:S(2) %session loop
 end
 end
 
-function [alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(Data_in, SR, Timing,s_num,pre_per,post_per, EMG_num)
+function [alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(Data_in, SR, Timing,s_num,pre_per,post_per, synergy_num)
 % this function estimate that Timing is constructed by 6 kinds of timing.
 %1:start trial
 %2:hold on 1
@@ -193,15 +158,17 @@ trialData = cell(s_num,3);
 AllT = pre1_TIME+TIME_W+post2_TIME;
 %j:muscle number 
 %i:trial number
-outData = cell(s_num,EMG_num);
+outData = cell(s_num,synergy_num);
 sec = zeros(3,1);
-alignedData = cell(1,EMG_num);
-alignedDataAVE = cell(1,EMG_num);
-for j = 1:EMG_num
+alignedData = cell(1,synergy_num);
+alignedDataAVE = cell(1,synergy_num);
+%↓筋電ごとに処理を行う
+for j = 1:synergy_num
     DataA = zeros(s_num,AllT);
     for i = 1:s_num
 %         trialData{i,2} = Data(j,Timing(i,2):Timing(i,5));???
          time_w = round(Timing(i,5) - Timing(i,2) +1);
+        %↓interpftを使って，データの切り出しとTIME_W(タスクにかかる時間の平均)のスケールにDataを合わせる(タスクの切り出し + TimeNormalization)
         if time_w == TIME_W
             sec(1,1) = sec(1,1)+1;
             trialData{i,1} = Data(j,floor(Timing(i,2)-time_w*per1):floor(Timing(i,2)-1));
@@ -233,16 +200,16 @@ for j = 1:EMG_num
 end
 Ti = [Timing(:,2) Timing(:,2) Timing(:,2) Timing(:,2) Timing(:,2) Timing(:,2)];
 Timing_ave = mean(Timing - Ti);
-% alignedData = cell(1,EMG_num);
+% alignedData = cell(1,synergy_num);
 
-% for k = 1:EMG_num
+% for k = 1:synergy_num
 %     SS = outData{:,k};
 %     alignedData{1,k} = SS;%cell2mat(SS);
 %     alignedDataAVE{1,k} = mean(SS,1);
 % end
 end
 
-function [Re] = alignDataEX(Data_in,Timing,Da,pre_per,post_per,TIME_W,EMG_num)
+function [Re] = alignDataEX(Data_in,Timing,Da,pre_per,post_per,TIME_W,synergy_num)
 % this function estimate that Timing is constructed by 6 kinds of timing.
 %1:start trial
 %2:hold on 1
@@ -268,17 +235,17 @@ centerP2 = zeros(L,2);
 centerP3 = zeros(L,2);
 centerP4 = zeros(L,2);
 centerPTask = zeros(L,2);
-Re.tData1 = cell(1,EMG_num);
-Re.tData2 = cell(1,EMG_num);
-Re.tData3 = cell(1,EMG_num);
-Re.tData4 = cell(1,EMG_num);
-Re.tDataTask = cell(1,EMG_num);
-Re.tData1_AVE = cell(1,EMG_num);
-Re.tData2_AVE = cell(1,EMG_num);
-Re.tData3_AVE = cell(1,EMG_num);
-Re.tData4_AVE = cell(1,EMG_num);
-Re.tDataTask_AVE = cell(1,EMG_num);
-for m = 1:EMG_num
+Re.tData1 = cell(1,synergy_num);
+Re.tData2 = cell(1,synergy_num);
+Re.tData3 = cell(1,synergy_num);
+Re.tData4 = cell(1,synergy_num);
+Re.tDataTask = cell(1,synergy_num);
+Re.tData1_AVE = cell(1,synergy_num);
+Re.tData2_AVE = cell(1,synergy_num);
+Re.tData3_AVE = cell(1,synergy_num);
+Re.tData4_AVE = cell(1,synergy_num);
+Re.tDataTask_AVE = cell(1,synergy_num);
+for m = 1:synergy_num
         tD1 = cell(L,1);
         tD2 = cell(L,1);
         tD3 = cell(L,1);
@@ -296,21 +263,6 @@ for m = 1:EMG_num
         tD3{i,1} = D{1,m}(i,centerP3(i,1):centerP3(i,2));
         tD4{i,1} = D{1,m}(i,centerP4(i,1):centerP4(i,2));
         tDTask{i,1} = D{1,m}(i,centerPTask(i,1):centerPTask(i,2));
-%         StD1 = size(tD1{i,1});
-%         StD2 = size(tD2{i,1});
-%         StD3 = size(tD3{i,1});
-%         StD4 = size(tD4{i,1});
-%         StDtask = size(tDTask{i,1});
-%        if  StD1(2) ~= TIME_W*sum(per1)
-%            [tD1{i,1}, slct]=AlignDatasets(tD1{i,1},round(TIME_W*sum(per1)),'row');
-%            tD1{i,1} = resample(tD1{i,1},round(TIME_W*sum(per1)),StD1(2));
-%        end
-%        if  StD2(2) ~= TIME_W*sum(per2)
-%            tD2{i,1} = resample(tD2{i,1},round(TIME_W*sum(per2)),StD2(2));
-%        end
-%        if  StD3(2) ~= TIME_W*sum(per3)
-%            tD3{i,1} = resample(tD3{i,1},round(TIME_W*sum(per3)),StD3(2));
-%        end
     end
     Re.slct = cell(5,1);
     [tD1, Re.slct{1}]=AlignDatasets(tD1,round(TIME_W*sum(per1)),'row');
