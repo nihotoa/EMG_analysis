@@ -18,7 +18,7 @@ codeにpath通してないとエラー吐く
 function [Result,Allfiles] = MakeDataForPlot_H_utb()
 %% set param
 monkeyname = 'Se';
-synergy_type = 'post'; %'pre' / 'post'
+synergy_type = 'pre'; %'pre' / 'post'
 group_num = 2;
 Tsynergy = 4;
 
@@ -102,12 +102,9 @@ for SS = 1:S(2) %session loop
    pre_per = 50; % How long do you want to see the signals before hold_on 1 starts.
    post_per = 50; % How long do you want to see the signals after hold_off 2 starts.
    
-   try
-       %↓alignedData:タスクごとの、時間正規化した時間シナジー  alignedDataAVE:時間正規化した時間シナジーの平均 All_T:トリミングしたサンプル数(正規化済み)
-       [alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(allH{SS}',[], tim, ts(1),pre_per,post_per, Tsynergy);
-   catch
-       continue
-   end
+
+   %↓alignedData:タスクごとの、時間正規化した時間シナジー  alignedDataAVE:時間正規化した時間シナジーの平均 All_T:トリミングしたサンプル数(正規化済み)
+   [alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(allH{SS}',[], tim, ts(1),pre_per,post_per, Tsynergy);
    taskRange = [-1*pre_per, 100+post_per];
     %↓時間シナジーをトリミングして、保存する(3つのタイミング付近でトリミングしている(task開始,?,?)),各日のトリミングデータと、全日の平均データが、それぞれのタイミング分だけ保存されている
    [Res] = alignDataEX(alignedData, tim, D, pre_per,post_per,TIME_W, Tsynergy);

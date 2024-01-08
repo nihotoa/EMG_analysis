@@ -11,7 +11,7 @@ clear
 %% settings
 monkeyname = 'Se';
 % task = 'standard_filtNO5';
-focus_term = 'ore'; %pre/post 
+focus_term = 'pre'; %pre/post 
 task = 'standard';
 days = [...%pre-surgery
         200117;...
@@ -44,8 +44,6 @@ days = [...%pre-surgery
 %         200330;...
          ];
 
-% days = [170703 170707 170711 170714 170720 170802 170824 170830 170907 170914 170925];
-%   days = [170517 170524 170526 170529];
  group_num = 1;
  syn_num = 4;
  

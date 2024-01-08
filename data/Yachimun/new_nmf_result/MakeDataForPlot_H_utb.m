@@ -30,7 +30,7 @@ function [Result,Allfiles] = MakeDataForPlot_H_utb()
 %% make data for corr
 monkeyname = 'F';
 %task = 'standard';
-group_num = 1;
+group_num = 2;
 Tsynergy = 4;
 disp('please select all "_standard.mat"(Yachimun -> easyData ->)') %(only use name part (no use contents))
 Allfiles_S = uigetfile(['*' 'standard.mat'],...

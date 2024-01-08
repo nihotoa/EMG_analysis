@@ -39,7 +39,7 @@ clear
 
 realname = 'SesekiL'; %monkey name 'Yachimun'/'SesekiL'
 monkeyname = 'Se'; %prefix of Raw data(ex) 'Se' or 'Ya' or 'F'
-Tar = 'EMG'; %the data which you want to plot -> 'EMG' or 'Synergy'
+Tar = 'Synergy';  % the data which you want to plot -> 'EMG' or 'Synergy'
 save_fold = 'easyData';     % you don't need to change
 plot_fig = 1;               % wtherer you want to plot figures
 pColor = 'C';               %select 'K'(black plot) or 'C'(color plot) 【recommend!!】pre-analysis:'K' post-analysis:'C'
@@ -51,10 +51,10 @@ CTC = 0;                    %plot Cross Talk(I don't confirm whether I can use t
 nomalizeAmp = 0;            %normalize Amplitude 
 YL = Inf;                   %(if nomalize Amp == 0) ylim of graph
 save_xcorr_data = 0;        %save data to use of plot x_corr
-nmf_fold_name = 'new_nmf_result'; %(if you want to plot synergy data) folder name of nmf_fold
+nmf_fold_name = 'nmf_result'; %(if you want to plot synergy data) folder name of nmf_fold
 plot_figure_type = 'default';  %'default' / 'forHara' プロットするfigureのタイプ.default:フツーのやつ.forHara:一つのタイミングのsubplotに全ての筋肉(pColor='K'の時にしか設定していない)
 eliminate_muscles = 0; %(if plot_figure_type=='forHara' & monkeyname== 'Se') if you want to ignore some muscles which is broken in post-section when you plot figures. 
-synergy_order = [3, 1, 2, 4];  %(pre1,2,3,4)に対応するpostのsynergy(Yachimun:[3,1,2,4], Seseki:[3,1,4,2])
+synergy_order = [3, 1, 4, 2];  %(pre1,2,3,4)に対応するpostのsynergy(Yachimun:[3,1,2,4], Seseki:[3,1,4,2])
 %% code section
 switch monkeyname
    case 'F'
@@ -284,19 +284,19 @@ switch pColor
          case 'F'
             PostDays = P.PostDays;
             Sp = length(PostDays);
-            cmap_cold = [0 200 255; 0 120 255; 0 40 255];
-            cmap_warm = [236 0 0];
-            Csp =  [cmap_cold; cmap_warm] / 255;
-%             Csp = zeros(Sp,3);
-%             Csp(:,1) = ones(Sp,1).*linspace(0.3,1,Sp)';
+%             cmap_cold = [0 200 255; 0 120 255; 0 40 255];
+%             cmap_warm = [236 0 0];
+%             Csp =  [cmap_cold; cmap_warm] / 255;
+            Csp = zeros(Sp,3);
+            Csp(:,1) = ones(Sp,1).*linspace(0.3,1,Sp)';
          case 'Se'
             PostDays = P.PostDays;
             Sp = length(PostDays);
-            cmap_cold = [0 200 255; 0 150 255; 0 100 255; 0 40 255];
-            cmap_warm = [236 0 0];
-            Csp =  [cmap_cold; cmap_warm] / 255;
-%             Csp = zeros(Sp,3);
-%             Csp(:,2) = ones(Sp,1).*linspace(0.3,1,Sp)';
+%             cmap_cold = [0 200 255; 0 150 255; 0 100 255; 0 40 255];
+%             cmap_warm = [236 0 0];
+%             Csp =  [cmap_cold; cmap_warm] / 255;
+            Csp = zeros(Sp,3);
+            Csp(:,2) = ones(Sp,1).*linspace(0.3,1,Sp)';
          case 'Ma'
             PostDays = P.PostDays;
             Sp = length(PostDays);

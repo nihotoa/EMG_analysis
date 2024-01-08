@@ -39,7 +39,7 @@ clear
 %% settings
 monkeyname = 'F';
 term_group = 'post'; %pre/post
-group_num = 1; %デフォルトだと1になっていた
+group_num = 6; %デフォルトだと1になっていた
 syn_num = 4;
 save_WDaySynergy = 0;%WDaySynergyをセーブするか(anovaで使用するデータ)
 save_data = 1; %order_tim_listへデータを保存するか(基本的に1にしておくべき)
@@ -173,7 +173,7 @@ days = [...
     case 6
         %太田解析用(dist-dist)
         EMG_num = 10;
-        EMGs = {'BRD';'ECR';'ECU';'ED45';'EDCdist';'FCR';'FCU';'FDP';'FDSdist';'PL'};  
+        EMGs = {'BRD';'ECR';'ECU';'ED45';'EDC';'FCR';'FCU';'FDP';'FDS';'PL'};  
     case 7
         %太田解析用(prox-prox)
         EMG_num = 10;
