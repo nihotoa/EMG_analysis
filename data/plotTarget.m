@@ -38,8 +38,8 @@ clear
 %Ptrig2 : Averaged dataset on each session -50:50%(triggered at hold_on2)
 %Ptrig3 : Averaged dataset on each session -25:105%(triggered at hold_on1)
 
-realname = 'SesekiL'; %monkey name 'Yachimun'/'SesekiL'
-monkeyname = 'Se'; %prefix of Raw data(ex) 'Se' or 'Ya' or 'F'
+realname = 'Wasa'; %monkey name 'Yachimun'/'SesekiL'/'Wasa'
+monkeyname = 'Wa'; %prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa' 
 Tar = 'EMG';  % the data which you want to plot -> 'EMG' or 'Synergy'
 save_fold = 'easyData';     % you don't need to change
 plot_fig = 1;               % wtherer you want to plot figures
@@ -52,7 +52,7 @@ CTC = 0;                    %plot Cross Talk(I don't confirm whether I can use t
 nomalizeAmp = 0;            %normalize Amplitude 
 YL = Inf;                   %(if nomalize Amp == 0) ylim of graph
 save_xcorr_data = 0;        %save data to use of plot x_corr
-plot_max_EMG_value = 1; % if you want to save each days & each muscles max EMG value
+plot_max_EMG_value = 0; % if you want to save each days & each muscles max EMG value
 nmf_fold_name = 'nmf_result'; %(if you want to plot synergy data) folder name of nmf_fold
 plot_figure_type = 'default';  %'default' / 'forHara' プロットするfigureのタイプ.default:フツーのやつ.forHara:一つのタイミングのsubplotに全ての筋肉(pColor='K'の時にしか設定していない)
 eliminate_muscles = 0; %(if plot_figure_type=='forHara' & monkeyname== 'Se') if you want to ignore some muscles which is broken in post-section when you plot figures. 
@@ -83,6 +83,14 @@ switch monkeyname
       plotWindow2 = [-10 15];
       plotWindow3 = [-15 15];
       plotWindow4 = [98 115];
+  case 'Wa'
+      PreDays = []; % to be decided
+      AVEPre4List = []; % to be decided
+      % plot window (Xcorr data will be made in this range)
+      plotWindow1 = [-25 5];
+      plotWindow2 = [-15 15];
+      plotWindow3 = [-15 15];
+      plotWindow4 = [95 125];
 end
 switch Tar
     case 'EMG'

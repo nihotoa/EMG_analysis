@@ -44,61 +44,24 @@ if(isempty(Tarfiles))
     disp('User pressed cancel.')
     return;
 end
-% 
-% OutputParentDir = getconfig(mfilename,'OutputParentDir');
-% try
-%     if(~exist(OutputParentDir,'dir'))
-%         OutputParentDir = pwd;
-%     end
-% catch
-%     OutputParentDir = pwd;
-% end
-% 
-% OutputParentDir      = uigetdir(OutputParentDir,'?o???t?H???_???I???????????????B?K?v?????????????????????B');
-% if(OutputParentDir==0)
-%     disp('User pressed cancel.')
-%     return;
-% else
-%     setconfig(mfilename,'OutputParentDir',OutputParentDir);
-% end
 
 for jj=1:length(InputDirs)
     try
     InputDir    = InputDirs{jj};
    
      for kk =1:length(Tarfiles)
-         
-         Tar         = loaddata(fullfile(ParentDir,InputDir,Tarfiles{kk}));
+         Tar = loaddata(fullfile(ParentDir,InputDir,Tarfiles{kk}));
           OutputDir   = fullfile(ParentDir,InputDir);
-%          mkdir(OutputDir)
-
-%          Tar  = makeContinuousChannel([Tar.Name,''''''''], 'derivative', Tar, 3);
-
-         %median center subtraction
-         %Tar   = makeContinuousChannel([Tar.Name,'-medC'],'medCenter',Tar);
-         
          %highpass filtering
-         Tar   = makeContinuousChannel([Tar.Name,'-hp50Hz'],'butter',Tar,'high',6,50,'both');
-%          Tar  = makeContinuousChannel([Tar.Name,'-lp1000Hz'], 'butter', Tar, 'low',6,1000);
+         Tar = makeContinuousChannel([Tar.Name,'-hp50Hz'],'butter',Tar,'high',6,50,'both');
          %full wave rectification
-         Tar  = makeContinuousChannel([Tar.Name,'-rect'],'rectify',Tar);
-         
+         Tar = makeContinuousChannel([Tar.Name,'-rect'],'rectify',Tar);
          %lowpass filtering
-         Tar  = makeContinuousChannel([Tar.Name,'-lp20Hz'], 'butter', Tar, 'low',6,20,'both');
-%          Tar  = makeContinuousChannel([Tar.Name,'-lp5Hz'], 'butter', Tar, 'low',6,5);
-         
-         % norlisation relative to the mean
-         %Tar = makeContinuousChannel([Tar.Name,'-norm'],'meanNorm',Tar);
-         %linear smoothing
-%          Tar  = makeContinuousChannel([Tar.Name,'-lnsmth100'], 'linear smoothing', Tar,0.02);
-         
+         Tar = makeContinuousChannel([Tar.Name,'-lp20Hz'], 'butter', Tar, 'low',6,20,'both');
          %down sampling at 100Hz
-         Tar  = makeContinuousChannel([Tar.Name,'-ds100Hz'], 'resample', Tar, 100,0);
-         
-         %Tar.Data = normalize(Tar.Data,'max');
-         
-      save(fullfile(OutputDir,[Tar.Name,'.mat']),'-struct','Tar');disp(fullfile(OutputDir,Tar.Name));     
-     %   TarMuscles(kk,1) = cellstr(Tar.Name); 
+         Tar = makeContinuousChannel([Tar.Name,'-ds100Hz'], 'resample', Tar, 100,0);
+         % save data
+         save(fullfile(OutputDir,[Tar.Name,'.mat']),'-struct','Tar');disp(fullfile(OutputDir,Tar.Name));     
      end
      catch
       disp(['****** Error occured in ',InputDirs{jj}]) ; 
