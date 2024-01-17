@@ -5,7 +5,7 @@
 　→ これを改善する場合はこの関数を修正する前に,calcXcorr.mのResultXcorr~.matに保存される変数の内容を確認する必要がある
 ・plot_eachのsubplotのところの汎用性が低い(t = 2:3 (T2,T3)にしか対応していない)Y
 【procedure】
-pre : calcXcorr.m
+pre : create_elapsed_days.m
 post : plotXcorr_W.m
 【caution!!】
 AllDays,dayX,visual_synは適宜変更すること
@@ -52,7 +52,7 @@ save_fig = 1;
 plotFocus = 'off';
 plot_each = 1;% if you want to plot x_corr which is extracted from around each timing of task, please set '1'
 synergy_combination = 'dist-dist'; %dist-dist,dist-prox,prox-dist,prox-prox (procedure is EDC-FDS)
-vidual_syn =  [2,3]; %please select the synergy group which you want to plot!!
+vidual_syn =  [1, 4]; %please select the synergy group which you want to plot!!
 plot_timing = [1,2,3,4];
 title_name = {'lever1 on','lever1 off','photo on','photo off'};
 % figure;
@@ -68,101 +68,57 @@ switch Tar
       '2020/03/17','2020/03/18','2020/03/19','2020/03/23','2020/03/24',...
       '2020/03/25','2020/03/26','2020/03/30'}; %28days
 
-%       dayX = {'2017/04/05','2017/04/10','2017/04/11','2017/04/12','2017/04/13',...
-%               '2017/04/19','2017/04/20','2017/04/21','2017/04/24','2017/04/25',...
-%               '2017/04/26','2017/05/01','2017/05/09','2017/05/11','2017/05/12',...
-%               '2017/05/15','2017/05/16','2017/05/17','2017/05/24','2017/05/26',...
-%               '2017/05/29','2017/06/06','2017/06/08','2017/06/12','2017/06/13',...
-%               '2017/06/14','2017/06/15','2017/06/16',...'2017/06/19',
-%               '2017/06/20',...
-%               '2017/06/21','2017/06/22','2017/06/23','2017/06/27','2017/06/28',...
-%               '2017/06/29','2017/06/30','2017/07/03','2017/07/04','2017/07/06',...
-%               '2017/07/07','2017/07/10','2017/07/11','2017/07/12','2017/07/13',...
-%               '2017/07/14','2017/07/18','2017/07/19','2017/07/20','2017/07/25',...
-%               '2017/07/26','2017/08/02','2017/08/03','2017/08/04','2017/08/07',...
-%               '2017/08/08','2017/08/09','2017/08/10','2017/08/15','2017/08/17',...
-%               '2017/08/18','2017/08/22','2017/08/23','2017/08/24','2017/08/25',...
-%               '2017/08/29','2017/08/30','2017/08/31','2017/09/01','2017/09/04',...
-%               '2017/09/05','2017/09/06','2017/09/07','2017/09/08','2017/09/11',...
-%               '2017/09/13','2017/09/14','2017/09/25','2017/09/26','2017/09/27','2017/09/29'};%81days
    case 'Synergy'
       c = lines(4);
-%       c = jet(4);
       AllDays = datetime([2020,01,17])+caldays(0:73); %5/16の133日経過 → 9/29
-%       dayX = {'2017/05/16','2017/05/17','2017/05/24','2017/05/26','2017/06/28',...
-%               '2017/06/29','2017/06/30','2017/07/03','2017/07/04','2017/07/06',...
-%               '2017/07/07','2017/07/10','2017/07/11','2017/07/12','2017/07/13',...
-%               '2017/07/14','2017/07/18','2017/07/19','2017/07/20','2017/07/25',...
-%               '2017/07/26','2017/08/02','2017/08/03','2017/08/04','2017/08/07',...
-%               '2017/08/08','2017/08/09','2017/08/10','2017/08/15','2017/08/17',...
-%               '2017/08/18','2017/08/22','2017/08/23','2017/08/24','2017/08/25',...
-%               '2017/08/29','2017/08/30','2017/08/31','2017/09/01','2017/09/04',...
-%               '2017/09/05','2017/09/06','2017/09/07','2017/09/08','2017/09/11',...
-%               '2017/09/13','2017/09/14','2017/09/25','2017/09/26','2017/09/27','2017/09/29'};%51days
-
-      dayX = {'2020/01/17','2020/01/19','2020/01/20','2020/02/10','2020/02/12',...
-              '2020/02/13','2020/02/17','2020/02/18','2020/02/19',...
-              '2020/02/20','2020/02/21','2020/02/26','2020/03/03','2020/03/04',...
-              '2020/03/05','2020/03/06','2020/03/09','2020/03/10','2020/03/16',...
-              '2020/03/17','2020/03/18','2020/03/19','2020/03/23','2020/03/24',...
-              '2020/03/25','2020/03/26','2020/03/30'};%27days(exept 2/14)
-
-%         dayX = {'2017/05/16','2017/05/17','2017/05/24','2017/05/26','2017/06/28',...
-%           '2017/06/29','2017/06/30','2017/07/03','2017/07/04','2017/07/06',...
-%           '2017/07/07','2017/07/10','2017/07/11','2017/07/12','2017/07/13',...
-%           '2017/07/14','2017/07/18','2017/07/19','2017/07/20','2017/07/25',...
-%           '2017/07/26','2017/08/02','2017/08/03','2017/08/04','2017/08/07',...
-%           '2017/08/08','2017/08/09','2017/08/10','2017/08/15','2017/08/24',...
-%           '2017/08/29','2017/08/30','2017/09/01',...
-%           '2017/09/05','2017/09/06',...
-%           '2017/09/14','2017/09/25'};%37days
-%       AllDays = datetime([2017,04,05])+caldays(0:177);
-%       dayX = {'2017/04/05','2017/04/10','2017/04/11','2017/04/12','2017/04/13',...
-%               '2017/04/19','2017/04/20','2017/04/21','2017/04/24','2017/04/25',...
-%               '2017/04/26','2017/05/01','2017/05/09','2017/05/11','2017/05/12',...
-%               '2017/05/15','2017/05/16','2017/05/17','2017/05/24','2017/05/26',...
-%               '2017/05/29','2017/06/06','2017/06/08','2017/06/12','2017/06/13',...
-%               '2017/06/14','2017/06/15','2017/06/16','2017/06/20',...
-%               '2017/06/21','2017/06/22','2017/06/23','2017/06/27','2017/06/28',...
-%               '2017/06/29','2017/06/30','2017/07/03','2017/07/04','2017/07/06',...
-%               '2017/07/07','2017/07/10','2017/07/11','2017/07/12','2017/07/13',...
-%               '2017/07/14','2017/07/18','2017/07/19','2017/07/20','2017/07/25',...
-%               '2017/07/26','2017/08/02','2017/08/03','2017/08/04','2017/08/07',...
-%               '2017/08/08','2017/08/09','2017/08/10','2017/08/15','2017/08/17',...
-%               '2017/08/18','2017/08/22','2017/08/23','2017/08/24','2017/08/25',...
-%               '2017/08/29','2017/08/30','2017/08/31','2017/09/01','2017/09/04',...
-%               '2017/09/05','2017/09/06','2017/09/07','2017/09/08','2017/09/11',...
-%               '2017/09/13','2017/09/14','2017/09/25','2017/09/26','2017/09/27','2017/09/29'};%80days
+    dayX = {'2020/01/17','2020/01/19','2020/01/20','2020/02/10','2020/02/12',...
+      '2020/02/13','2020/02/17','2020/02/17','2020/02/18','2020/02/19',...
+      '2020/02/20','2020/02/21','2020/02/26','2020/03/03','2020/03/04',...
+      '2020/03/05','2020/03/06','2020/03/09','2020/03/10','2020/03/16',...
+      '2020/03/17','2020/03/18','2020/03/19','2020/03/23','2020/03/24',...
+      '2020/03/25','2020/03/26','2020/03/30'}; %28days
 end
 
-AVEPre4Days = {'2020/01/17','2020/01/19','2020/01/20'};
-TaskCompletedDay = {'2020/02/10'};
-TTsurgD = datetime([2020,01,21]);                %date of tendon transfer surgery
-TTtaskD = datetime([2020,02,10]);                %date monkey started task by himself after surgery & over 100 success trials (he started to work on June.28)
-Xpost = zeros(size(AllDays));
-Xpre4 = zeros(size(AllDays));
-% 
-k=1;l=1;
-for i=1:length(AllDays)
-   if k>length(dayX)
-   elseif AllDays(i)==dayX(k)
-       Xpost(1,i) = i;
-       k=k+1;
-   end
-   if l>length(AVEPre4Days)
-   elseif AllDays(i)==AVEPre4Days(l)
-       Xpre4(1,i) = i;
-       l=l+1;
-   end
-   if AllDays(i)==TaskCompletedDay
-      tcd = i;
-   end
-end
-xdays = find(Xpost) - find(AllDays==TTsurgD);
-xPre4days = find(Xpre4) - find(AllDays==TTsurgD);
-TCD = tcd - find(AllDays==TTsurgD);
-xnoT = 0:(find(AllDays==TTtaskD)-1- find(AllDays==TTsurgD));
+% AVEPre4Days = {'2020/01/17','2020/01/19','2020/01/20'};
+% TaskCompletedDay = {'2020/02/10'};
+% TTsurgD = datetime([2020,01,21]);                %date of tendon transfer surgery
+% TTtaskD = datetime([2020,02,10]);                %date monkey started task by himself after surgery & over 100 success trials (he started to work on June.28)
+% Xpost = zeros(size(AllDays));
+% Xpre4 = zeros(size(AllDays));
+% % 
+% k=1;l=1;
+% for i=1:length(AllDays)
+%    if k>length(dayX)
+%    elseif AllDays(i)==dayX(k)
+%        Xpost(1,i) = i;
+%        k=k+1;
+%    end
+%    if l>length(AVEPre4Days)
+%    elseif AllDays(i)==AVEPre4Days(l)
+%        Xpre4(1,i) = i;
+%        l=l+1;
+%    end
+%    if AllDays(i)==TaskCompletedDay
+%       tcd = i;
+%    end
+% end
+% xdays = find(Xpost) - find(AllDays==TTsurgD);
+% pre_days = find(Xpre4) - find(AllDays==TTsurgD);
+% TCD = tcd - find(AllDays==TTsurgD);
+% xnoT = 0:(find(AllDays==TTtaskD)-1- find(AllDays==TTsurgD));
+
 Ptype = 'RAW';                                     %Plot Type : 'RAW' or 'MMean'( move mean )
+
+% xdaysとpre_daysを計算する
+disp('Please select days list data')
+[file_name, path_name] = uigetfile();
+load(fullfile(path_name, file_name), 'elapsed_days_list');
+xdays = elapsed_days_list;
+pre_days = xdays(xdays < 0)';
+post_days = xdays(xdays > 0)';
+TCD = post_days(1);
+xnoT = [0:post_days(1)-1];
+
 np = 3;                                            %smooth num
 kernel = ones(np,1)/np; 
 delSyn = [0,0,0,0];%delete plots which synergy belongs to
@@ -224,7 +180,7 @@ if plot_each == 1
               %      f = figure;
                    hold on;
                    % area for control data %コントロールデータのエリアを灰色に染める
-                   fi1 = fill([xPre4days xPre4days(end:-1:1)],[ones(size(xPre4days)) (-1).*ones(size(xPre4days))],'k'); %よくわからないけど重要
+                   fi1 = fill([pre_days pre_days(end:-1:1)],[ones(size(pre_days)) (-1).*ones(size(pre_days))],'k'); %よくわからないけど重要
                    fi1.FaceColor = [0.78 0.78 0.78];       % make the filled area
                    fi1.EdgeColor = 'none';            % remove the line around the filled area
                    hold off;
@@ -251,7 +207,7 @@ if plot_each == 1
                   hold off;
                   % decoration
                   ylim([-1 1]);
-                  xlim([xPre4days(1) xdays(end)]);
+                  xlim([pre_days(1) xdays(end)]);
                   title([EMGs{j,1} ' ' title_name{t}],'FontSize',15);
               end
            end
@@ -312,7 +268,7 @@ if plot_each == 1
               %      f = figure;
                    hold on;
                    % area for control data
-                   fi1 = fill([xPre4days xPre4days(end:-1:1)],[ones(size(xPre4days)) (-1).*ones(size(xPre4days))],'k');
+                   fi1 = fill([pre_days pre_days(end:-1:1)],[ones(size(pre_days)) (-1).*ones(size(pre_days))],'k');
                    fi1.FaceColor = [0.78 0.78 0.78];       % make the filled area
                    fi1.EdgeColor = 'none';            % remove the line around the filled area
         % %            % area for disable term
@@ -369,7 +325,7 @@ if plot_each == 1
                      delete(p{4});
                   end
                   ylim([-1 1]);
-                  xlim([xPre4days(1) xdays(end)]);
+                  xlim([pre_days(1) xdays(end)]);
               %     xlim([xdays(1) xdays(end)]);
               %     xlim([0 81]);
                   title([title_name{t} ' Synergy' num2str(j)]);
@@ -392,7 +348,8 @@ if plot_each == 1
           lgd.FontSize = 8;
           %save figure
           if save_fig == 1
-              save_dir = ['EachPlot/x_corr_result/' synergy_combination];
+%               save_dir = ['EachPlot/x_corr_result/' synergy_combination];
+              save_dir = fullfile(pwd, 'EachPlot', 'x_corr_result', synergy_combination);
               if not(exist(save_dir))
                   mkdir(save_dir)
               end

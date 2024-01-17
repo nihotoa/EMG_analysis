@@ -19,7 +19,7 @@ post : (if you want to conduct synergy analysis) SAVE4NMF.m
 %}
 clear;
 %% set param
-monkeyname = 'Se' ; % prefix of recorded file(ex. F1710516-0002)
+monkeyname = 'F' ; % prefix of recorded file(ex. F1710516-0002)
 taskname = 'standard'; %you don't need to change
 save_fold = 'easyData'; %you don't need to change
 

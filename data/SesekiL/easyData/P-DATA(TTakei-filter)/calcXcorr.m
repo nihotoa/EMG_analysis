@@ -1,5 +1,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
+[function]
+
+[procedure]
+pre: plotTarget.m
+post: create_elapsed_days.m
+
 【補足】 変数synergy_orderについて
 生成した時間シナジーの図などから、preとpostのシナジーの対応関係を明示する(ex.)preのシナジー１はpostのシナジー3と等しい
 (synergy_orderの設定例) pre  ->  post シナジー1 = シナジー4 シナジー2 = シナジー2 シナジー3 = シナジー1
@@ -18,11 +24,11 @@
 function [Re,ResE] = calcXcorr()
 %% set param 
 clear;
-Tar = 'EMG';           %'EMG','Synergy'
+Tar = 'Synergy';           %'EMG','Synergy'
 save_data = 1;
-pre_num = 4;  %control dataの数(0516, 0517, 0524, 0526)
+pre_num = 3;  %control dataの数(200117, 200119, 200120)
 %preとpostのシナジー番号を合わせるもの,(これをしないと,x_corrの値が混じってしまう)
-synergy_order = [3 1 2 4];
+synergy_order = [3 1 4 2];
 timing_num = 4; %EachXcorrで計算するタイミングデータの個数(ex.)タイミングがT1~T4まであった場合は4にする
 
 

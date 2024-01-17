@@ -41,7 +41,7 @@ try
     load([fold_name '_' sprintf('%02d',EMG_num) '.mat']);
     load([fold_name '_' sprintf('%02d',EMG_num) '_nmf.mat']);
 catch
-    temp_fold_name = strrep(fold_name, 'F', 'Ya');
+    temp_fold_name = strrep(fold_name, 'Ya', 'F');
     load([temp_fold_name '_' sprintf('%02d',EMG_num) '.mat']);
     load([temp_fold_name '_' sprintf('%02d',EMG_num) '_nmf.mat']);
 end

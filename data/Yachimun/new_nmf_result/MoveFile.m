@@ -4,14 +4,14 @@
 makeEMGNMFで生成されたファイルが1箇所に保存されている(ex. Yachimun -> new_nmf_result ->dist-dist)ので、それを正しい場所に移す関数
 カレントディレクトリをnew_nmf_resultにして使用する
 用途がYachimunに限定されているので、もっと汎用性を高めたい場合は新しく変数を作って該当箇所を変数に置き換える(サル名、使用する筋肉の数など)
-pre_operate: makeEMGNMF
+pre_operate: change_name.m
 post_operate:SYNERGYPLOT.m
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;
 %% set param
-reference_dir = 'data_fold_(12_muscle)';
-prefix_name = 'Ya';
+reference_dir = 'data_fold(dist-dist)';
+prefix_name = 'F';
 saved_folder_prefix = 'F';
 first_day = 170516;
 last_day = 170929;

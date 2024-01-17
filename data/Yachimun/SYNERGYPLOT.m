@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
-pre_operate:(MoveFile.m) or SYNERGYPLOT.m
+pre_operate:(change_name.m) or makeEMGNMF_oya.m
 post_operate: dispNMF_W(path: /Users/naohitoohta/Desktop/EMG_analysis/data/Yachimun/new_nmf_result/dispNMF_W.m)
 %めちゃめちゃ冗長
 階層移りすぎ,変える必要のあるパラメータが，中で使う関数に散らばりすぎ．

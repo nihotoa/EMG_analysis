@@ -1,6 +1,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
-【補足】 変数synergy_orderについて
+[function]
+
+[procedure]
+pre: plotTarget.m
+post: plotXcorr.m
+
+[added information]
+変数synergy_orderについて
 生成した時間シナジーの図などから、preとpostのシナジーの対応関係を明示する(ex.)preのシナジー１はpostのシナジー3と等しい
 (synergy_orderの設定例) pre  ->  post シナジー1 = シナジー4 シナジー2 = シナジー2 シナジー3 = シナジー1
 シナジー4 = シナジー3 の場合には synergy_order = [4 2 1 3]; と設定する
@@ -18,11 +25,11 @@
 function [Re,ResE] = calcXcorr()
 %% set param 
 clear;
-Tar = 'EMG';           %'EMG','Synergy'
+Tar = 'Synergy';           %'EMG', 'Synergy'
 save_data = 1;
 pre_num = 4;  %control dataの数(0516, 0517, 0524, 0526)
 %preとpostのシナジー番号を合わせるもの,(これをしないと,x_corrの値が混じってしまう)
-synergy_order = [3 1 2 4];
+synergy_order = [4, 2, 1, 3];
 timing_num = 4; %EachXcorrで計算するタイミングデータの個数(ex.)タイミングがT1~T4まであった場合は4にする
 
 
@@ -90,7 +97,7 @@ end
 function [D,conD,E] = LoadCorrData(Tar,used_muscle)
 switch Tar
    case 'EMG'
-      disp('please select AllDataforXcorr_~.mat file (which you want to calcurate x_corr)')
+      disp(['please select AllDataforXcorr_~' Tar '.mat file (which you want to calcurate x_corr)'])
       selected_file = uigetfile('*.mat',...
                      'Select One or More Files', ...
                      'MultiSelect', 'on');

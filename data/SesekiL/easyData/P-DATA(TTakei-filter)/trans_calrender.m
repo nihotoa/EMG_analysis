@@ -1,6 +1,8 @@
 function [calender_day] = trans_calrender(exp_day)
 %TRANS_CALRENDER 
-%   Ú×à–¾‚ð‚±‚±‚É‹Lq doubleŒ^‚Ì“ú•t(—á)20220801‚ð“ü—Í‚Æ‚µ‚Ä,datatimeŒ^‚É•ÏŠ·‚µ‚Ä•Ô‚·ŠÖ”.(Šî€“ú‚©‚ç‚ÌŒo‰ß“ú”‚ÌŽZo‚É•K—v‚È‚½‚ßì‚Á‚½)
+% function: return datatime object
+% input => double (ex.) 20220801
+% return: type => data time
     exp_day = string(exp_day); %stringŒ^‚Ö•ÏŠ·
     temp = char(exp_day);
     if length(temp) == 8
