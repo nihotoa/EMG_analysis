@@ -38,8 +38,8 @@ clear
 %Ptrig2 : Averaged dataset on each session -50:50%(triggered at hold_on2)
 %Ptrig3 : Averaged dataset on each session -25:105%(triggered at hold_on1)
 
-realname = 'Wasa'; %monkey name 'Yachimun'/'SesekiL'/'Wasa'
-monkeyname = 'Wa'; %prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa' 
+realname = 'SesekiL'; %monkey name 'Yachimun'/'SesekiL'/'Wasa'
+monkeyname = 'Se'; %prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa' 
 Tar = 'EMG';  % the data which you want to plot -> 'EMG' or 'Synergy'
 save_fold = 'easyData';     % you don't need to change
 plot_fig = 1;               % wtherer you want to plot figures
@@ -54,7 +54,7 @@ YL = Inf;                   %(if nomalize Amp == 0) ylim of graph
 save_xcorr_data = 0;        %save data to use of plot x_corr
 plot_max_EMG_value = 0; % if you want to save each days & each muscles max EMG value
 nmf_fold_name = 'nmf_result'; %(if you want to plot synergy data) folder name of nmf_fold
-plot_figure_type = 'default';  %'default' / 'forHara' プロットするfigureのタイプ.default:フツーのやつ.forHara:一つのタイミングのsubplotに全ての筋肉(pColor='K'の時にしか設定していない)
+plot_figure_type = 'forHara';  %'default' / 'forHara' プロットするfigureのタイプ.default:フツーのやつ.forHara:一つのタイミングのsubplotに全ての筋肉(pColor='K'の時にしか設定していない)
 eliminate_muscles = 0; %(if plot_figure_type=='forHara' & monkeyname== 'Se') if you want to ignore some muscles which is broken in post-section when you plot figures. 
 synergy_order = [3,1,4,2];  %(pre1,2,3,4)に対応するpostのsynergy(Yachimun:[4,2,1,3], Seseki:[3,1,4,2])
 %% code section
@@ -709,7 +709,7 @@ if plot_fig == 1
             end
         case 'forHara'
             saveas(gcf, 'stack_figure_forHara.fig')
-             saveas(gcf, 'stack_figure_forHara.png')
+            saveas(gcf, 'stack_figure_forHara.png')
     end
     close all;
     % save data
@@ -931,6 +931,7 @@ function plot_timing_figures2(figure_str, data_str, colormap_str)
            title([data_str.timing_name], 'FontSize',20)
        end
     end
+    % decoration
     lgd = legend();
     set(lgd, 'FontSize',8);
     lgd.String = lgd.String(~strcmp(lgd.String, 'data1'));

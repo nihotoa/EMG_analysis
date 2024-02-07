@@ -7,7 +7,6 @@
 [role of this code]
 get the information which is used for merge data
 
-
 [Saved data location]
 location: Yachimun/easyData
 file_name: ~_standard.mat (ex.) F170516_standard.mat
@@ -25,13 +24,16 @@ save_fold = 'easyData'; %you don't need to change
 
 %% code section
 file_list = dir([monkeyname '*.mat']);
+
+% Extract oonly 'date' part from file name
 for ii = 1:length(file_list)
     exp_day = regexp(file_list(ii).name, '\d+', 'match');
     tarsessions(ii,1) = str2double(exp_day{1});
 end
 tarsessions = unique(tarsessions);
-%tarfiles = {2 4};
 
+% save each date's fileInfo(including imformation on monkeyname, xpdate, file_num) to a .mat file
+common_save_fold_path = fullfile(pwd, save_fold);
 for tarN = 1:length(tarsessions)
     fileInfo.monkeyname = monkeyname;
     fileInfo.xpdate = tarsessions(tarN);
@@ -40,6 +42,7 @@ for tarN = 1:length(tarsessions)
     temp_end = regexp(ref_file(end).name, '\d+', 'match');
     tarfiles = [str2double(temp_start{2}) str2double(temp_end{2})];
     fileInfo.file_num = [tarfiles(1),tarfiles(2)];
-    save([save_fold '/' monkeyname num2str(tarsessions(tarN)) '_' taskname '.mat'],'fileInfo')
+    % save data
+    save(fullfile(common_save_fold_path, [monkeyname num2str(tarsessions(tarN)) '_' taskname '.mat']), 'fileInfo')
 end
 
