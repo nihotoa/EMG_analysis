@@ -33,10 +33,7 @@ end
 save_fold = 'new_nmf_result';
 cd(save_fold)
 cd([fold_name '_' task])
-% cd(fold_name)
-% % everyday nomalization
-% load([fold_name '_' task '_' sprintf('%02d',EMG_num) '.mat']);
-% load([fold_name '_' task '_' sprintf('%02d',EMG_num) '_nmf.mat']);
+
 try
     load([fold_name '_' sprintf('%02d',EMG_num) '.mat']);
     load([fold_name '_' sprintf('%02d',EMG_num) '_nmf.mat']);

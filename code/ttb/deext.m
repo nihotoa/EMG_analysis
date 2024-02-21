@@ -1,5 +1,5 @@
 function y  = deext(x)
-% ファイル名から拡張子を消去する
+% remove extension from file name
 
 if(ischar(x))
     X   = {x};

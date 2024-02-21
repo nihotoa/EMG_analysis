@@ -1,15 +1,28 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
-【function】
-SAVE4NMFで作った筋電データに前処理(フィルタリング、正規化など)を施して、再び筋肉ごとにデータとして保存
-【procedure】
+[your operation]
+1. Go to the directory named monkey name (ex.) if you want to analyze Yachimun's data, please go to 'EMG_analysis/data/Yachimun'
+2. Please run this code
+
+[role of this code]
+Preform preprocessing on EMG data and save these filtered data (as .mat file).
+
+[Saved data location]
+location: Yachimun/new_nmf_result/'~_standard' (ex.) F170516_standard
+file name: the file name changes depending on the preprocessing content.
+(ex.) BRD-hp50Hz-rect-lp20Hz-ds100Hz.mat
+
+[procedure]
 pre:SAVE4NMF.m
 post:MakeEMGNMFbtc_Oya.m
+
+[Improvement points(Japanaese)]
+
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
+clear;
+%% code section
+% get folder path of monkey fold
 ParentDir   = getconfig(mfilename,'ParentDir');
 try
     if(~exist(ParentDir,'dir'))
@@ -18,7 +31,7 @@ try
 catch
     ParentDir   = pwd;
 end
-disp('【Please select nmf_result fold (Yachimun -> nmf_result】)')
+disp('【Please select nmf_result fold (Yachimun/new_nmf_result】)')
 ParentDir   = uigetdir(ParentDir,'?e?t?H???_???I???????????????B');
 if(ParentDir==0)
     disp('User pressed cancel.')
@@ -26,7 +39,7 @@ if(ParentDir==0)
 else
     setconfig(mfilename,'ParentDir',ParentDir);
 end
-
+% get the name of the floder that exists directly under 'Parent dir'
 InputDirs   = dirdir(ParentDir);
 disp('【Plese select day fold (which contains the data you want to filter】)')
 InputDirs   = uiselect(InputDirs,1,'??????????Experiment???I???????????????B');
@@ -45,75 +58,25 @@ if(isempty(Tarfiles))
     return;
 end
 
-for jj=1:length(InputDirs)
+for jj=1:length(InputDirs)  % each day
     try
-    InputDir    = InputDirs{jj};
-   
-     for kk =1:length(Tarfiles)
-         Tar = loaddata(fullfile(ParentDir,InputDir,Tarfiles{kk}));
-          OutputDir   = fullfile(ParentDir,InputDir);
-         %highpass filtering
-         Tar = makeContinuousChannel([Tar.Name,'-hp50Hz'],'butter',Tar,'high',6,50,'both');
-         %full wave rectification
-         Tar = makeContinuousChannel([Tar.Name,'-rect'],'rectify',Tar);
-         %lowpass filtering
-         Tar = makeContinuousChannel([Tar.Name,'-lp20Hz'], 'butter', Tar, 'low',6,20,'both');
-         %down sampling at 100Hz
-         Tar = makeContinuousChannel([Tar.Name,'-ds100Hz'], 'resample', Tar, 100,0);
-         % save data
-         save(fullfile(OutputDir,[Tar.Name,'.mat']),'-struct','Tar');disp(fullfile(OutputDir,Tar.Name));     
-     end
+        InputDir    = InputDirs{jj};
+         for kk =1:length(Tarfiles)
+             Tar = loaddata(fullfile(ParentDir,InputDir,Tarfiles{kk}));
+              OutputDir   = fullfile(ParentDir,InputDir);
+             %highpass filtering
+             Tar = makeContinuousChannel([Tar.Name,'-hp50Hz'],'butter',Tar,'high',6,50,'both');
+             %full wave rectification
+             Tar = makeContinuousChannel([Tar.Name,'-rect'],'rectify',Tar);
+             %lowpass filtering
+             Tar = makeContinuousChannel([Tar.Name,'-lp20Hz'], 'butter', Tar, 'low',6,20,'both');
+             %down sampling at 100Hz
+             Tar = makeContinuousChannel([Tar.Name,'-ds100Hz'], 'resample', Tar, 100,0);
+             % save data
+             save(fullfile(OutputDir,[Tar.Name,'.mat']),'-struct','Tar');
+             disp(fullfile(OutputDir,Tar.Name));     
+         end
      catch
       disp(['****** Error occured in ',InputDirs{jj}]) ; 
     end
-    
 end
-    
-
-%             
-
-% S=topen;
-% XData=((1:length(S.Data))-1)/S.SampleRate;
-% fig    = figure;
-% h     = nan(1,6);
-
-
-% h(1)   = subplot(6,1,1,'parent',fig);
-% plot(h(1),XData,S.Data); title(h(1),S.Name)
-
-% %highpass filtering
-% S   = makeContinuousChannel([S.Name,'-hp30Hz'],'butter',S,'high',2,30);
-% h(2)    = subplot(6,1,2,'parent',fig);
-% plot(h(2),XData,S.Data); title(h(2),S.Name)
-
-% %rectify
-% S  = makeContinuousChannel([S.Name,'-rect'],'rectify',S);
-% h(3)    = subplot(6,1,3,'parent',fig);
-% plot(h(3),XData,S.Data); title(h(3),S.Name)
-% 
-% % detrend (substract baseline)
-% S   = makeContinuousChannel([S.Name,'-detrend'],'detrend',S,'constant');
-% h(4)    = subplot(6,1,4,'parent',fig);
-% plot(h(4),XData,S.Data); title(h(4),S.Name)
-% % 
-% %lowpass filtering
-% S  = makeContinuousChannel([S.Name,'-lp20Hz'], 'butter', S, 'low',2,20);
-% h(4)    = subplot(6,1,4,'parent',fig);
-% plot(h(4),XData,S.Data); title(h(4),S.Name)
-
-
-% % linear smoothing 100ms 100Hz version
-% S  = makeContinuousChannel([S.Name,'-ls100ms'],'linear smoothing',S,0.1);
-% h(5)    = subplot(6,1,5,'parent',fig);
-% plot(h(5),XData,S.Data); title(h(5),S.Name)
-% 
-
-% % downsampling
-% S  = makeContinuousChannel([S.Name,'-ds100Hz'], 'resample', S, 100,0);
-% XData=((1:length(S.Data))-1)/S.SampleRate;
-% h(6)    = subplot(6,1,6,'parent',fig);
-% plot(h(6),XData,S.Data); title(h(6),S.Name)
-
-% linkaxes(h,'xy')
-% 
-%            save(fullfile(pathname,[Y3.Name,'.mat']),'-struct','Y3');disp(fullfile(pathname,Y3.Name));

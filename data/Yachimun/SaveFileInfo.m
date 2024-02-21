@@ -9,7 +9,7 @@ get the information which is used for merge data
 
 [Saved data location]
 location: Yachimun/easyData
-file_name: ~_standard.mat (ex.) F170516_standard.mat
+file name: ~_standard.mat (ex.) F170516_standard.mat
 
 [procedure]
 pre: Nothing
