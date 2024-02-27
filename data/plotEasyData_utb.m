@@ -2,99 +2,57 @@
 %{
 % coded by Naoki Uchida
 % modified by Naohito Ota
-% last modification : 2019.05.10
-this code is used in runnningEasyfunc.m
+% last modification : 2024.02.26
+this code is used in 'runnningEasyfunc.m'
 [role of this function]
-1.
-2.
-3.
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [alignedDataAVE,alignedData,taskRange,AllT,Timing_ave,TIME_W,Res,D] = plotEasyData_utb( monkeyname, xpdate_num, EMGp, ECoGp )
-%PLOTEASYDATA Summary of this function goes here
-%   Detailed explanation goes here
-
-switch monkeyname
-    case 'Wa'
-        real_name = 'Wasa';
-    case 'Ya'
-        real_name = 'Yachimun';
-    case 'F'
-        real_name = 'Yachimun';
-    case 'Sa'
-        real_name = 'Sakiika';
-    case 'Su'
-        real_name = 'Suruku';
-    case 'Se'
-        real_name = 'SesekiL';
-%         real_name = 'SesekiR';
-        
-    case 'Ma'
-        real_name = 'Matatabi';
-end
-global task
+function [alignedDataAVE,alignedData,taskRange,AllT,Timing_ave,TIME_W,Res,D] = plotEasyData_utb( monkeyname, xpdate_num, save_fold, task ,real_name)
+%% get informations(path of save_folder, EMG data, timing data ,etc...)
 xpdate = sprintf('%d',xpdate_num);
- disp(['START TO MAKE & SAVE ' monkeyname xpdate '_Plot Data']);
-cd(real_name)
+disp(['START TO MAKE & SAVE ' monkeyname xpdate '_Plot Data']);
 
-cd(['easyData/' monkeyname xpdate '_' task])
-S = load([monkeyname xpdate '_EasyData.mat']); %load EASY file
-cd ../../
+% get the path of save_fold
+save_fold_path = fullfile(pwd, real_name, save_fold, [monkeyname xpdate '_' task]);
 
-% plot mode 1:EMG-ECoG,2:nothing, 3:EMG, 4:ECoG 
-if EMGp == 1 && ECoGp == 1
-    EMGd = S.AllData_EMG;
-    ECoGd = S.AllDataECoG;
-    TimingT1 = S.Tp;
-    SR = S.SampleRate;
-    plot_mode = 1;
-elseif EMGp ~= 1 && ECoGp ~= 1
-    TimingT1 = S.Tp;
-    SR = S.SampleRate;
-    plot_mode = 2;
-elseif ECoGp ~= 1
-    EMGd = S.AllData_EMG;
-    TimingT1 = S.Tp;
-    SR = S.SampleRate;
-    plot_mode = 3;
-else
-    ECoGd = S.AllDataECoG;
-    TimingT1 = S.Tp;
-    SR = S.SampleRate;
-    plot_mode = 4;
-end 
+%load EasyData
+S = load(fullfile(save_fold_path, [monkeyname xpdate '_EasyData.mat'])); 
 
-% global EMGs
-% global EMG_num 
-EMGs = S.EMGs; % EMG list
+% get EMG data & timing data & SamplingRate 
+EMGd = S.AllData_EMG;
+TimingT1 = S.Tp;
+SR = S.SampleRate;
+
+EMGs = S.EMGs; % name list of EMG
 EMG_num = length(EMGs);% the number of EMGs
 TimingT1 = TimingT1(1:end-1,:);
-L = size(TimingT1);
-s_num = L(1); %the number of success tials
+[trial_num, ~] = size(TimingT1);  % number of success trial 
 
-% pullData = cell(s_num,2);
 %% filter EMG
-if plot_mode == 1 || plot_mode == 3
-    filt_mode = 5;%Takei method:1, Next method:2, Roland method:3, Uchida method:5
-    [filtData_EMG,SR_EMG,Timing_EMG,filtP] = filterEMG(EMGd,filt_mode,SR,EMG_num,TimingT1);
-end
-%% filter ECoG
-if plot_mode == 1 || plot_mode == 4
-    [op] = filterECoG(ECoGd,filt_mode,SR);
-end
-%%
-%define time window
-pre_per = 50; % How long do you want to see the signals before hold_on 1 starts.
-post_per = 50; % How long do you want to see the signals after hold_off 2 starts.
+filt_mode = 3;% the method of filter(1: Takei method, 2: Roland method, 3: Uchida method)
+[filtData_EMG,Timing_EMG,filtP] = filterEMG(EMGd,filt_mode,SR,EMG_num,TimingT1);
 
-[alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(filtData_EMG, SR_EMG, Timing_EMG,s_num,pre_per,post_per, EMG_num);
+%% Cut out EMG data for each trial(& perform time normalization(Normalize from 'lever1 on' to 'lever1 off' as 100%))
+
+%define time window
+pre_per = 50; % How long do you want to see the signals before 'lever1 on' starts.
+post_per = 50; % How long do you want to see the signals after 'lever2 off' starts.
+
+% Trim EMG data for each trial & perform time normalization for each trial
+[alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(filtData_EMG, Timing_EMG,trial_num,pre_per,post_per, EMG_num);
+
+% Setting the range to be cut out around each timing
 taskRange = [-1*pre_per, 100+post_per];
 D.trig1_per = [50 50];
 D.trig2_per = [50 50];
 D.trig3_per = [50 50];
 D.trig4_per = [50 50];
 D.task_per = [25,105];
-[Res] = alignDataEX(alignedData,Timing_EMG, D,pre_per,post_per,TIME_W,EMG_num);
+
+% Centering on each timing, trim & get EMG data around it
+[Res] = alignDataEX(alignedData,Timing_EMG, D,pre_per,TIME_W,EMG_num);
+
+% Summary of trimming details(length of trimmed data, cut out range around each timing)
 D.Ld1 = length(Res.tData1_AVE{1});
 D.Range1 = D.trig1_per;
 D.Ld2 = length(Res.tData2_AVE{1});
@@ -106,261 +64,164 @@ D.Range4 = D.trig4_per;
 D.LdTask = length(Res.tDataTask_AVE{1});
 D.RangeTask = D.task_per;
 D.filtP = filtP;
-% All.pD = alignedData;
-% All.pDave = alignedDataAVE;
-% All.AllT = AllT;
 
-cd(['easyData/' monkeyname xpdate '_' task])
-    %save outData with filter preference daata
-    switch monkeyname
-         case 'Wa'
-             save([monkeyname xpdate '_alignedData_' filtP.whose '.mat'], 'monkeyname', 'xpdate','EMGs', ...
-                                                        'alignedData', 'alignedDataAVE','filtP','s_num','taskRange','Timing_ave'...
-                                                        );
-         case {'Ya','Ma','F'}
-             save([monkeyname xpdate '_alignedData_' filtP.whose '.mat'], 'monkeyname', 'xpdate','EMGs', ...
-                                                        'alignedData', 'alignedDataAVE','filtP','s_num','taskRange','Timing_ave'...
-                                                        );
-         case {'Su','Se'}
-             save([monkeyname xpdate '_alignedData_' filtP.whose '.mat'], 'monkeyname', 'xpdate','EMGs', ...
-                                                        'alignedData', 'alignedDataAVE','filtP','s_num','taskRange','Timing_ave'...
-                                                        );
-    end
-cd ../../../
+% save data
+save(fullfile(save_fold_path, [monkeyname xpdate '_alignedData_' filtP.whose '.mat']), 'monkeyname', 'xpdate','EMGs', ...
+                                          'alignedData', 'alignedDataAVE','filtP','trial_num','taskRange','Timing_ave'...
+                                                  );
+
 disp(['END TO MAKE & SAVE ' monkeyname xpdate '_Plot Data']);
 end
 
-function [filtData, newSR,newTiming,filtP] = filterEMG(filtData,filt_mode,SR,EMG_num,Timing)
-    switch filt_mode
-        case 1 %Takei filter
-            filt_h = 50; %cut off frequency [Hz]
-            filt_l = 20; %cut off frequency [Hz]
-            np = 100;%smooth num
-            kernel = ones(np,1)/np; 
-            downdata_to = 100; %sampling frequency [Hz]
-            
-            for i = 1:EMG_num
-                filtData(:,i) = filtData(:,i)-mean(filtData(:,i));
-            end
-            
-            [B,A] = butter(6, (filt_h .* 2) ./ SR, 'high');
-            for i = 1:EMG_num
-                filtData(:,i) = filter(B,A,filtData(:,i));
-            end
+function [filtData,newTiming,filtP] = filterEMG(filtData,filt_mode,SR,EMG_num,Timing)
+%{
+explanation of output arguments:
+filtData: EMG data after filtering
+newTiming: Timing data for filtered EMG (supports downsampling)
+filtP: A structure containing content about the filter contents, such as the cutoff frequency of a high-pass filter
+%}
 
-            filtData = abs(filtData);
+switch filt_mode
+    case 1 %Takei filter
+        filt_h = 50; %cut off frequency [Hz]
+        filt_l = 20; %cut off frequency [Hz]
+        np = 100;%smooth num
+        kernel = ones(np,1)/np; 
+        downdata_to = 100; %sampling frequency [Hz]
+        
+        for i = 1:EMG_num
+            filtData(:,i) = filtData(:,i)-mean(filtData(:,i));
+        end
+        
+        [B,A] = butter(6, (filt_h .* 2) ./ SR, 'high');
+        for i = 1:EMG_num
+            filtData(:,i) = filter(B,A,filtData(:,i));
+        end
 
-            [B,A] = butter(6, (filt_l .* 2) ./ SR, 'low');
-            for i = 1:EMG_num
-                filtData(:,i) = filter(B,A,filtData(:,i));
-            end
+        filtData = abs(filtData);
 
-            for i = 1:EMG_num
-        %     filtData = smooth(filtData,1,'movmean',smooth_num);
-                filtData(:,i) = conv2(filtData(:,i),kernel,'same');
-            end
+        [B,A] = butter(6, (filt_l .* 2) ./ SR, 'low');
+        for i = 1:EMG_num
+            filtData(:,i) = filter(B,A,filtData(:,i));
+        end
 
-            filtData = resample(filtData,downdata_to,SR);
-            newSR = downdata_to;
-            newTiming = Timing*newSR/SR;
-            filtP = struct('whose','TTakei','Hp',filt_h, 'Rect','on','Lp',filt_l,'smooth',np,'down',downdata_to);
-        case 2
-            filt_h = 50; %cut off frequency [Hz]
-            filt_l = 10; %cut off frequency [Hz]
-            np = 100;%smooth num
-            kernel = ones(np,1)/np; 
-            downdata_to = 100; %sampling frequency [Hz]
-            
-            for i = 1:EMG_num
-                filtData(:,i) = filtData(:,i)-mean(filtData(:,i));
-            end
-            
-            [B,A] = butter(6, (filt_h .* 2) ./ SR, 'high');
-            for i = 1:EMG_num
-                filtData(:,i) = filter(B,A,filtData(:,i));
-            end
+        for i = 1:EMG_num
+    %     filtData = smooth(filtData,1,'movmean',smooth_num);
+            filtData(:,i) = conv2(filtData(:,i),kernel,'same');
+        end
 
-            filtData = abs(filtData);
+        filtData = resample(filtData,downdata_to,SR);
+        newSR = downdata_to;
+        newTiming = Timing*newSR/SR;
+        filtP = struct('whose','TTakei','Hp',filt_h, 'Rect','on','Lp',filt_l,'smooth',np,'down',downdata_to);
+    case 2 %Roland filter
+        np = round(5000*0.22);%smooth num
+        kernel = ones(np,1)/np; 
+        downdata_to = 1000; %sampling frequency [Hz]
 
-            [B,A] = butter(6, (filt_l .* 2) ./ SR, 'low');
-            for i = 1:EMG_num
-                filtData(:,i) = filter(B,A,filtData(:,i));
-            end
+        for i=1:EMG_num
+            filtData(:,i) = abs(filtData(:,i)-mean(filtData(:,i)));
+        end
 
-            for i = 1:EMG_num
-        %     filtData = smooth(filtData,1,'movmean',smooth_num);
-                filtData(:,i) = conv2(filtData(:,i),kernel,'same');
-            end
+        for i = 1:EMG_num
+            filtData(:,i) = conv2(filtData(:,i),kernel,'same');
+        end
 
-            filtData = resample(filtData,downdata_to,SR);
-            newSR = downdata_to;
-            newTiming = Timing*newSR/SR;
-            filtP = struct('whose','TTakei-10HzLPFversion','Hp',filt_h, 'Rect','on','Lp',filt_l,'smooth',np,'down',downdata_to);
-        case 3 %Roland filter
-            np = round(5000*0.22);%smooth num
-            kernel = ones(np,1)/np; 
-            downdata_to = 1000; %sampling frequency [Hz]
+        filtData = resample(filtData,downdata_to,SR);
+        newSR = downdata_to;
+        newTiming = Timing*newSR/SR;
+        filtP = struct('whose','Roland','Hp','no', 'Rect','on','Lp','no','smooth',np,'down',downdata_to);
+   case 3 %Uchida filtfilt
+        filt_h = 50; %cut off frequency [Hz]
+        filt_l = 20; %cut off frequency [Hz]
+        downdata_to = 100; %sampling frequency [Hz]
+        
+        % offset
+        for i = 1:EMG_num
+            filtData(:,i) = filtData(:,i)-mean(filtData(:,i));
+        end
 
-%             [B,A] = butter(6, (filt_h .* 2) ./ 5000, 'high');
-%             for i = 1:EMG_num
-%                 filtData(:,i) = filter(B,A,filtData(:,i));
-%             end
-            for i=1:EMG_num
-                filtData(:,i) = abs(filtData(:,i)-mean(filtData(:,i)));
-            end
-%             [B,A] = butter(6, (filt_l .* 2) ./ 5000, 'low');
-%             for i = 1:EMG_num
-%                 filtData(:,i) = filter(B,A,filtData(:,i));
-%             end
+        %high-pass filter
+        [B,A] = butter(6, (filt_h .* 2) ./ SR, 'high');
+ 
+        for i = 1:EMG_num
+            filtData(:,i) = filtfilt(B,A,filtData(:,i));
+        end
+        
+        %rect
+        filtData = abs(filtData);
 
-            for i = 1:EMG_num
-        %     filtData = smooth(filtData,1,'movmean',smooth_num);
-                filtData(:,i) = conv2(filtData(:,i),kernel,'same');
-            end
+        % low-pass filter
+        [B,A] = butter(6, (filt_l .* 2) ./ SR, 'low');
+        for i = 1:EMG_num
+            filtData(:,i) = filtfilt(B,A,filtData(:,i));
+        end
 
-            filtData = resample(filtData,downdata_to,SR);
-            newSR = downdata_to;
-            newTiming = Timing*newSR/SR;
-            filtP = struct('whose','Roland','Hp','no', 'Rect','on','Lp','no','smooth',np,'down',downdata_to);
-        case 4 %Uchida filter (for no delay filtering)
-           %
-           
-            filt_h = 50; %cut off frequency [Hz]
-            filt_l = 20; %cut off frequency [Hz]
-            np = 100;%smooth num
-            kernel = ones(np,1)/np; 
-            downdata_to = 100; %sampling frequency [Hz]
-
-            rng default;
-            
-            for i = 1:EMG_num
-                filtData(:,i) = filtData(:,i)-mean(filtData(:,i));
-            end
-            
-            Ap = 1;
-            Ast = 60;
-            dfH = designfilt('highpassiir','PassbandFrequency',filt_h,...
-            'StopbandFrequency',filt_h-8.8,'PassbandRipple',Ap,...
-            'StopbandAttenuation',Ast,'SampleRate',SR,'DesignMethod','butter');
-            for i = 1:EMG_num
-                filtData(:,i) = filtfilt(dfH,filtData(:,i));
-            end
-            filtData = abs(filtData);
-            
-            dfL = designfilt('lowpassiir','PassbandFrequency',filt_l,...
-            'StopbandFrequency',filt_l+2.1,'PassbandRipple',Ap,...
-            'StopbandAttenuation',Ast,'SampleRate',SR,'DesignMethod','butter');
-            for i = 1:EMG_num
-                filtData(:,i) = filtfilt(dfL,filtData(:,i));
-            end
-            
-            for i = 1:EMG_num
-        %     filtData = smooth(filtData,1,'movmean',smooth_num);
-                filtData(:,i) = conv2(filtData(:,i),kernel,'same');
-            end
-             FOrderH = filtord(dfH);
-             FOrderL = filtord(dfL);
-            filtData = resample(filtData,downdata_to,SR);
-            newSR = downdata_to;
-            newTiming = Timing*newSR/SR;
-            filtP = struct('whose','NUchida','dfH',dfH, 'dfL', dfL,'filtOrderH',FOrderH,'filtOrderL',FOrderL,'Hp',filt_h, 'Rect','on','Lp',filt_l,'smooth',np,'down',downdata_to);
-            
-       case 5 %Uchida filtfilt
-            filt_h = 50; %cut off frequency [Hz]
-            filt_l = 20; %cut off frequency [Hz]
-            downdata_to = 100; %sampling frequency [Hz]
-            
-            % offset
-            for i = 1:EMG_num
-                filtData(:,i) = filtData(:,i)-mean(filtData(:,i));
-            end
-
-            %high-pass filter
-            [B,A] = butter(6, (filt_h .* 2) ./ SR, 'high');
-     
-            for i = 1:EMG_num
-                filtData(:,i) = filtfilt(B,A,filtData(:,i));
-            end
-            
-            %rect
-            filtData = abs(filtData);
-
-            % low-pass filter
-            [B,A] = butter(6, (filt_l .* 2) ./ SR, 'low');
-            for i = 1:EMG_num
-                filtData(:,i) = filtfilt(B,A,filtData(:,i));
-            end
-
-            %down sampling
-            filtData = resample(filtData,downdata_to,SR);
-            newSR = downdata_to;
-            newTiming = Timing*newSR/SR;
-            filtP = struct('whose','Uchida','Hp',filt_h, 'Rect','on','Lp',filt_l,'down',downdata_to);
-    end
+        %down sampling
+        filtData = resample(filtData,downdata_to,SR);
+        newSR = downdata_to;
+        newTiming = Timing*newSR/SR;
+        filtP = struct('whose','Uchida','Hp',filt_h, 'Rect','on','Lp',filt_l,'down',downdata_to);
+end
 end
 
-function [] = filterECoG(data,filt_mode,SR)
-    switch filt_mode
-        case 1
 
-        case 2
+function [alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(Data_in, Timing,trial_num,pre_per,post_per, EMG_num)
+%{
+this function estimate that Timing is constructed by 6 kinds of timing.
+1:start trial
+2:lever1 on 
+3:lever1 off
+4:lever2 on
+5:lever2 off
+6:success
+%}
 
-        case 3
-
-    end
-end
-
-function [alignedData, alignedDataAVE,AllT,Timing_ave,TIME_W] = alignData(Data_in, SR, Timing,s_num,pre_per,post_per, EMG_num)
-% this function estimate that Timing is constructed by 6 kinds of timing.
-%1:start trial
-%2:hold on 1
-%3:hold off 1
-%4:hold on 2
-%5:hold off 2
-%6:success
 %Please comfirm this construction is correct.  
 Data = Data_in';
-per1 = pre_per/100;
-per2 = post_per/100;
-% Timing = cast(Timing,'int32');
-TIME_W = round(sum(Timing(:,5)-Timing(:,2) + 1)/s_num); % averarge sample 
-pre1_TIME = round(per1*sum(Timing(:,5)-Timing(:,2) + 1)/s_num);
-post2_TIME = round(per2*sum(Timing(:,5)-Timing(:,2) + 1)/s_num);
-trialData = cell(s_num,3);
-AllT = pre1_TIME+TIME_W+post2_TIME;
-%j:muscle number
-%i:trial number
-outData = cell(s_num,EMG_num);
-sec = zeros(3,1);
+per1 = pre_per / 100;
+per2 = post_per / 100;
+
+TIME_W = round(sum(Timing(:,5)-Timing(:,2) + 1)/trial_num); % Find mean number of sample in 1 trial
+pre1_TIME = round(per1*sum(Timing(:,5)-Timing(:,2) + 1)/trial_num); % Mean number of samples in pre direction
+post2_TIME = round(per2*sum(Timing(:,5)-Timing(:,2) + 1)/trial_num);
+trialData = cell(trial_num,3);
+AllT = pre1_TIME+TIME_W+post2_TIME; % Average number of samples in the range to be trimmed ((pre_per + 100 + post_per)%)
+
+% Create an empty array for the output argument
+outData = cell(trial_num,EMG_num);
 alignedData = cell(1,EMG_num);
 alignedDataAVE = cell(1,EMG_num);
-%Time Normalize
+
+% Time Normalize
 for j = 1:EMG_num
-    DataA = zeros(s_num,AllT);
-    for i = 1:s_num
-%         trialData{i,2} = Data(j,Timing(i,2):Timing(i,5));???
-         time_w = round(Timing(i,5) - Timing(i,2) +1);
-        %compare average frames of all task(TIME_W) and the frames of this task(time_w) 
+    DataA = zeros(trial_num,AllT);
+    for i = 1:trial_num
+        % Find the number of samples for each trial.
+        time_w = round(Timing(i,5) - Timing(i,2) +1);
+
+        % Resampling from average frames of all task (time_w) to the frames of this task(time_W)
         if time_w == TIME_W
-            sec(1,1) = sec(1,1)+1;
-            trialData{i,1} = Data(j,floor(Timing(i,2)-time_w*per1):floor(Timing(i,2)-1));
-            trialData{i,2} = Data(j,floor(Timing(i,2)):floor(Timing(i,5)));
-            trialData{i,3} = Data(j,floor(Timing(i,5)+1):floor(Timing(i,5)+time_w*per2));
+            trialData{i,1} = Data(j,floor(Timing(i,2)-time_w*per1):floor(Timing(i,2)-1)); % pre trial data
+            trialData{i,2} = Data(j,floor(Timing(i,2)):floor(Timing(i,5))); % trial_data
+            trialData{i,3} = Data(j,floor(Timing(i,5)+1):floor(Timing(i,5)+time_w*per2)); % post trial data
         
         elseif time_w<TIME_W 
-            sec(2,1) = sec(2,1)+1;
             trialData{i,1} = interpft(Data(j,floor(Timing(i,2)-time_w*per1):floor(Timing(i,2)-1)),pre1_TIME);
             trialData{i,2} = interpft(Data(j,floor(Timing(i,2)):floor(Timing(i,5))),TIME_W);
             trialData{i,3} = interpft(Data(j,floor(Timing(i,5)+1):floor(Timing(i,5)+time_w*per2)),post2_TIME);
         
         else
-            sec(3,1) = sec(3,1)+1;
             trialData{i,1} = resample(Data(j,floor(Timing(i,2)-time_w*per1):floor(Timing(i,2)-1)),pre1_TIME,round(time_w*per1));
             trialData{i,2} = resample(Data(j,floor(Timing(i,2)):floor(Timing(i,5))),TIME_W,time_w);
             trialData{i,3} = resample(Data(j,floor(Timing(i,5)+1):floor(Timing(i,5)+time_w*per2)),post2_TIME,round(time_w*per2));
         end
+        
+        % Concatenate pre_trial, trial, post_trial data and save in list
         outData{i,j} = [trialData{i,1} trialData{i,2} trialData{i,3}];
         size_out = size(outData{i,j});
+
+        % Check if the data after concatenation matches AllT(Prevent data length from varying depending on trial)
         if size_out(2) == AllT
             DataA(i,:) = outData{i,j}(1,:);
         else
@@ -368,46 +229,52 @@ for j = 1:EMG_num
             outData{i,j} = resample(outData{i,j}(1,:),AllT,size_out(2));
         end
     end 
+
+    % Store each time-normalized EMG data
     alignedData{1,j} = DataA;
     alignedDataAVE{1,j} = mean(DataA,1);
 end
+
+% Calculate the average number of samples elapsed from the 'lever1 on' (timing2) to each timing
 Ti = [Timing(:,2) Timing(:,2) Timing(:,2) Timing(:,2) Timing(:,2) Timing(:,2)];
 Timing_ave = mean(Timing - Ti);
-% alignedData = cell(1,EMG_num);
-
-% for k = 1:EMG_num
-%     SS = outData{:,k};
-%     alignedData{1,k} = SS;%cell2mat(SS);
-%     alignedDataAVE{1,k} = mean(SS,1);
-% end
 end
 
-function [Re] = alignDataEX(Data_in,Timing,Da,pre_per,post_per,TIME_W,EMG_num)
+%------------------------------------------------------------------------------
+function [Re] = alignDataEX(Data_in,Timing,Da,pre_per,TIME_W,EMG_num)
+%{
 % this function estimate that Timing is constructed by 6 kinds of timing.
 %1:start trial
-%2:hold on 1
-%3:hold off 1
-%4:hold on 2
-%5:hold off 2
+%2:lever1 on
+%3:lever1 off
+%4:lever2 on
+%5:lever2 off
 %6:success
-%Please comfirm this construction is correct.  
+%}
+
+% Acquisition of data and determination of cropping range
 D = Data_in;
 pre_per = pre_per/100;
-% post_per = post_per/100;
 per1 = Da.trig1_per/100;
 per2 = Da.trig2_per/100;
 per3 = Da.trig3_per/100;
 per4 = Da.trig4_per/100;
 pertask = Da.task_per/100;
-L = length(Timing(:,1));
+
+% Formatting timing data
+trial_num = length(Timing(:,1));
 Ti = [Timing(:,2) Timing(:,2) Timing(:,2) Timing(:,2) Timing(:,2) Timing(:,2)];
 Timing = Timing - Ti;
-TimingPer = zeros(L,6);
-centerP1 = zeros(L,2);
-centerP2 = zeros(L,2);
-centerP3 = zeros(L,2);
-centerP4 = zeros(L,2);
-centerPTask = zeros(L,2);
+
+% Creating an empty array to store data
+TimingPer = zeros(trial_num,6);
+centerP1 = zeros(trial_num,2);
+centerP2 = zeros(trial_num,2);
+centerP3 = zeros(trial_num,2);
+centerP4 = zeros(trial_num,2);
+centerPTask = zeros(trial_num,2);
+
+% Creating a structure for output arguments
 Re.tData1 = cell(1,EMG_num);
 Re.tData2 = cell(1,EMG_num);
 Re.tData3 = cell(1,EMG_num);
@@ -418,25 +285,41 @@ Re.tData2_AVE = cell(1,EMG_num);
 Re.tData3_AVE = cell(1,EMG_num);
 Re.tData4_AVE = cell(1,EMG_num);
 Re.tDataTask_AVE = cell(1,EMG_num);
+
+
 for m = 1:EMG_num
-        tD1 = cell(L,1);
-        tD2 = cell(L,1);
-        tD3 = cell(L,1);
-        tD4 = cell(L,1);
-        tDTask = cell(L,1);
-    for i = 1:L%Trial loop
+    tD1 = cell(trial_num,1);
+    tD2 = cell(trial_num,1);
+    tD3 = cell(trial_num,1);
+    tD4 = cell(trial_num,1);
+    tDTask = cell(trial_num,1);
+
+    % For each trial, extract the EMG value centered at each timing.
+    for i = 1:trial_num
+        % Time elapsed from 'lever1 on' to each timing, assuming time elapsed from 'lever1 on' to 'lever2 off' as 1
         TimingPer(i,:) = Timing(i,:)./Timing(i,5);
-        centerP1(i,:) = [round((pre_per+TimingPer(i,2)-per1(1))*TIME_W+1),floor((pre_per+TimingPer(i,2)+per1(2))*TIME_W-1)];
-        centerP2(i,:) = [round((pre_per+TimingPer(i,3)-per2(1))*TIME_W+1),floor((pre_per+TimingPer(i,3)+per2(2))*TIME_W-1)];
-        centerP3(i,:) = [round((pre_per+TimingPer(i,4)-per3(1))*TIME_W+1),floor((pre_per+TimingPer(i,4)+per3(2))*TIME_W-1)];
-        centerP4(i,:) = [round((pre_per+TimingPer(i,5)-per4(1))*TIME_W+1),floor((pre_per+TimingPer(i,5)+per4(2))*TIME_W-1)];
-        centerPTask(i,:) = [round((pre_per+TimingPer(i,2)-pertask(1))*TIME_W+1),floor((pre_per+TimingPer(i,2)+pertask(2))*TIME_W-1)];
-        tD1{i,1} = D{1,m}(i,centerP1(i,1):centerP1(i,2));
-        tD2{i,1} = D{1,m}(i,centerP2(i,1):centerP2(i,2));
-        tD3{i,1} = D{1,m}(i,centerP3(i,1):centerP3(i,2));
-        tD4{i,1} = D{1,m}(i,centerP4(i,1):centerP4(i,2));
-        tDTask{i,1} = D{1,m}(i,centerPTask(i,1):centerPTask(i,2));
+
+        % Find the reference point for each timing (note that pre_per + TimingPer(i,j) is the center of timing j in trial i)
+        ref_P1 = pre_per + TimingPer(i,2); % 
+        ref_P2 = pre_per + TimingPer(i,3);
+        ref_P3 = pre_per + TimingPer(i,4);
+        ref_P4 = pre_per + TimingPer(i,5);
+
+        % Setting the cropping range around each timing(P1(lever1 on) ~ P4(lever2 off))
+        centerP1(i,:) = [round((ref_P1 - per1(1)) * TIME_W + 1), floor((ref_P1 + per1(2)) * TIME_W - 1)]; % Centered around 'lever1 on'
+        centerP2(i,:) = [round((ref_P2 - per2(1)) * TIME_W + 1), floor((ref_P2 + per2(2)) * TIME_W - 1)]; % Centered around 'lever1 off'
+        centerP3(i,:) = [round((ref_P3 - per3(1)) * TIME_W + 1), floor((ref_P3 + per3(2)) * TIME_W - 1)]; % Centered around 'lever2 on'
+        centerP4(i,:) = [round((ref_P4 - per4(1)) * TIME_W + 1), floor((ref_P4 + per4(2)) * TIME_W - 1)]; % Centered around 'lever2 off'
+        centerPTask(i,:) = [round((ref_P1-pertask(1)) * TIME_W + 1), floor((ref_P1 + pertask(2)) * TIME_W - 1)]; % Centered around 'lever1 on'
+
+        % Cut out EMG according to the set range
+        tD1{i,1} = D{1,m}(i, centerP1(i,1):centerP1(i,2));
+        tD2{i,1} = D{1,m}(i, centerP2(i,1):centerP2(i,2));
+        tD3{i,1} = D{1,m}(i, centerP3(i,1):centerP3(i,2));
+        tD4{i,1} = D{1,m}(i, centerP4(i,1):centerP4(i,2));
+        tDTask{i,1} = D{1, m}(i, centerPTask(i, 1):centerPTask(i, 2));
     end
+
     Re.slct = cell(5,1);
     [tD1, Re.slct{1}]=AlignDatasets(tD1,round(TIME_W*sum(per1)),'row');
     [tD2, Re.slct{2}]=AlignDatasets(tD2,round(TIME_W*sum(per2)),'row');

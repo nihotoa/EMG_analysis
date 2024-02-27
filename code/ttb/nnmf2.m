@@ -1,10 +1,23 @@
 function[wbest,hbest,normbest] = nnmf2(a,k,w0,h0,nrep,alg,target_param,pre_normalize,post_normalize)
+%{ 
+explanation of input arguments:
+a:  matrix of EMG data ([mm,nn]=size(a) mm channels x nn data length)
+k:  number of synergies (factors in NNMF) to extract
+w0,h0: Initial values of W_matrix (spatial pattern. [mm, k] = size(W)) & H_matrix (temporal pattern. [k, nn] = size(H)) 
+target_param: which matrix should be updated? ('wh' or 'h'). basically 'wh' is fine
+post_normalize: whether to perform amplitude normalization of H_matrix after optimization of H. 'mean'or 'none'. (Default is 'none')
+%}
 
-% a:  data ([mm,nn]=size(a) mm channels x nn data length)
-% k:  ターゲットとするNMFの数
-% w0,h0：  wとhの初期値、ランダムから始めたい場合は[]にする。
-% target_param： 'wh' or 'h' どのパラメータを更新するか？hのみもしくはwとh
-% post_normalize：   最後に計算したあとのHでノーマライズするかどうか 'mean'or 'none'
+%{ 
+explanation of output arguments:
+wbest: return the matrix of spatial pattern (after nnmf optimization)
+hbest: return the matrix of temporal pattern(after nnmf optimization)
+normbest: return the norm of the difference between reconstructed EMG and original EMG
+%}
+
+% set parameters (threshold setting in MU method of nnmf)
+maxiter = 1000; % maximum number of multiplicative updates
+tolx    = 10^-4; %threshold of dVAF
 
 if(nargin<3)
     w0      = [];
@@ -44,44 +57,31 @@ elseif(nargin<9)
     post_normalize  = 'none';
 end
 
-% 
-% alg     = 'mult';
-
-% nrep    = 1;
-maxiter = 1000; %情報更新ルールを最大で何回行うか
-tolx    = 10^-4; %dVAFの値の閾値
-toln    = 20; %何個の初期値でnmfを行うか
-w0isempty   = isempty(w0); %w0がemptyならw0isemptyにlogical値1が代入される
+w0isempty   = isempty(w0); % wether the matrix is empty or not
 h0isempty   = isempty(h0);
 
-% w0      = [];
-% h0      = [];
-%
-
 % Check required arguments
-%error(nargchk(2,Inf,nargin,'struct'))
-[n,m] = size(a);
-if ~isscalar(k) || ~isnumeric(k) || k<1 || k>min(m,n) || k~=round(k) %ここよく分からない
+[n,m] = size(a); %n: muscle num, m: length of data
+if ~isscalar(k) || ~isnumeric(k) || k<1 || k>min(m,n) || k~=round(k) 
     error('stats:nnmf:BadK',...
         'K must be a positive integer no larger than the number of rows or columns in A.');
 end
 
-if(strcmp(alg,'mult')) %よくわからない
+% create flag to identify differences in algorithm
+if(strcmp(alg,'mult')) 
     ismult  = true;
 else
     ismult  = false;
 end
 
-
-S = RandStream.getGlobalStream; %乱数作成のアルゴリズム
-
+% Creation of pseudo-random numbers
+S = RandStream.getGlobalStream; 
 fprintf('repetition\titeration\tSSE\tVAF\tdVAF\tAlgorithm\n');
-
 
 % pre_normalize
 switch pre_normalize
     case 'mean'
-        a = normalize(a,'mean'); %正規化(おそらく前段階で済み)
+        a = normalize(a,'mean'); 
         disp([mfilename,': pre_normalize = mean']);
     case 'none'
         disp([mfilename,': pre_normalize = none']);
@@ -91,19 +91,19 @@ end
 for irep=1:nrep
     
     if(w0isempty)
-        w0  = rand(S,n,k); %n*k列の乱数行列を作成
+        w0  = rand(S,n,k); % create a random number matrix of size n(muscle num)*k
     end
     if(h0isempty)
-        h0  = rand(S,k,m); %k*m列の乱数行列を作成
+        h0  = rand(S,k,m); % create a random number matrix of size k*m(length of data)
     end
     
     % Perform a factorization
-    [w1,h1,norm1,iter1,SSE1,VAF1,dVAF1] =    nnmf1(a,w0,h0,ismult,target_param,maxiter,tolx,toln);
-    %w1:乗法更新後の最終的な空間シナジー h1:最終的な時間シナジー norm1:最終的なノルム(どの乱数からのデータを適用するかの判断材料) iter1:何回乗法更新したか
-    %SSE1:最終的なSSE VAF1:最終的なVAF dVAF1:最後のdVAF
+    [w1,h1,norm1,iter1,SSE1,VAF1,dVAF1] =    nnmf1(a,w0,h0,ismult,target_param,maxiter,tolx);
     
     fprintf('%7d\t%7d\t%12g\t%12g\t%12g\t%s\t%s\n',irep,iter1,SSE1,VAF1,dVAF1,alg,target_param);
-    if(irep==1) %1個目の乱数による、NMFの結果
+
+    % change parameters based on which initial random number matrix was the best
+    if(irep==1) 
         wbest   = w1;
         hbest   = h1;
         normbest    = norm1;
@@ -124,21 +124,15 @@ for irep=1:nrep
             irepbest    = irep;
         end
     end
-    
 end
-
-
-
 
 fprintf('Final result:\n');
 fprintf('%7d\t%7d\t%12g\t%12g\t%12g\n',irepbest,iterbest,SSEbest,VAFbest,dVAFbest);
-
 
 if normbest==Inf
     error('stats:nnmf:NoSolution',...
         'Algorithm could not converge to a finite solution.')
 end
-
 
 hlen = sqrt(sum(hbest.^2,2));
 if any(hlen==0)
@@ -148,9 +142,9 @@ if any(hlen==0)
     hlen(hlen==0) = 1;
 end
 
+% amplitude normalizetion of H_matrix
 switch post_normalize
     case 'mean'
-        % HのUnitを揃えるためにnormalizeする。
         A   = mean(hbest,2);
         wbest   = wbest .* repmat(A',size(wbest,1),1);
         hbest   = hbest ./ repmat(A ,1,size(hbest,2));
@@ -158,44 +152,44 @@ switch post_normalize
     case 'none'
         disp([mfilename,': post_normalize = none']);
 end
-% wbest = bsxfun(@times,wbest,hlen');
-% hbest = bsxfun(@times,hbest,1./hlen);
-
-
-
 
 % Then order by w
 [~,idx] = sort(sum(wbest.^2,1),'descend');
 wbest = wbest(:,idx);
 hbest = hbest(idx,:);
 
-
-
 end
 
+%% define local function
 
+function [w,h,dnorm,iter,SSE,VAF,dVAF] = nnmf1(a,w0,h0,ismult,target_param,maxiter,tolx)
+%{ 
+explanation of output arguments:
+w:final version of spatial pattern after optimization 
+h: final version of spatial pattern after optimization 
+dnorm: norm of difference between measured EMG and reconstructed EMG => to evaluate the discrepancy
+iter: how many multiplicative updates have been performed?
+SSE: final version of SSE
+VAF: final version of VAF
+dVAF: final version of dVAF
+%}
 
-% -------------------
-function [w,h,dnorm,iter,SSE,VAF,dVAF] = nnmf1(a,w0,h0,ismult,target_param,maxiter,tolx,toln)
 % Single non-negative matrix factorization
-sqrteps = sqrt(eps);
-
-for iter=1:maxiter %何回情報更新するか
+sqrteps = sqrt(eps); % define machine epsilon for less error in calculations
+for iter=1:maxiter 
     if ismult
         % Multiplicative update formula
         switch lower(target_param)
-            case 'wh' %w,hの両方を乗法更新する
-                numer   = w0'*a;
-                h       = h0 .* (numer ./ ((w0'*w0)*h0 + eps(numer)));
-                numer   = a*h';
-                w       = w0 .* (numer ./ (w0*(h*h') + eps(numer)));
-            case 'h'
-                numer   = w0'*a;
-                h       = h0 .* (numer ./ ((w0'*w0)*h0 + eps(numer)));
-                w       = w0;
+            case 'wh' 
+                numerator   = w0'*a; % 
+                h = h0 .* (numerator ./ ((w0'*w0)*h0 + eps(numerator)));
+                numerator   = a*h'; %XH^T
+                w = w0 .* (numerator ./ (w0*(h*h') + eps(numerator)));
+            case 'h' % update only h
+                numerator   = w0'*a;
+                h = h0 .* (numerator ./ ((w0'*w0)*h0 + eps(numerator)));
+                w = w0;
         end
-                
-%         disp('mult')
     else
         % Alternating least squares
         switch lower(target_param)
@@ -206,16 +200,16 @@ for iter=1:maxiter %何回情報更新するか
                 h = max(0, w0\a);
                 w = w0;
         end
-%         disp('als')
     end
     
     
     % Get norm, SSE, SST and VAF
-    b = w*h; %乗法更新した後のwとhから構成された筋電
-    A   = reshape(a,numel(a),1); %a(筋電X)の要素同士の比較を容易にするために一行の行列にサイズ変換する
-    B   = reshape(b,numel(b),1); %b(再構成筋電wh)
-    D   = A-B; %X-wh
-    dnorm   = sqrt(sum(D.^2)/length(D)); %筋電と再構成筋電のユークリッドノルム
+    b = w*h; % reconstructed EMG (created from W, H after muluticative update)
+    A   = reshape(a,numel(a),1); % converts a (measured EMG) into a vector by reshape
+    B   = reshape(b,numel(b),1); % converts b (reconstructed EMG) into a vector by reshape
+    D   = A-B; %X-wh (difference between measured EMG and reconstructed EMG)
+
+    dnorm   = sqrt(sum(D.^2)/length(D)); % find the norm of the difference
     SSE = sum(D.^2);    % sum of squared residuals (errors)
     SST = sum((A-mean(A)).^2);  % sum of squared total?
 
@@ -224,74 +218,37 @@ for iter=1:maxiter %何回情報更新するか
     delta = max(dw,dh);
     
     % Check for convergence
-    if(iter==1) %一番最初の乗法更新則の適用後
+    % create an array to record VAF and dVAF(differencce from previous iteration)
+    if(iter==1) 
         VAF     = nan(1,maxiter);
         dVAF    = nan(1,maxiter);
-%         fig = figure;
-%         if ismult
-%             set(fig,'Name','nnmf -mult','Numbertitle','off');
-%         else
-%             set(fig,'Name','nnmf -als','Numbertitle','off');
-%         end
-%         hAx(1)  = subplot(2,1,1,'Parent',fig);
-%         hL(1)  = plot(hAx(1),[1,2],[0 0],'b');
-%         xlabel(hAx(1),'# iterations')
-%         ylabel(hAx(1),'VAF')
-%         hAx(2)  = subplot(2,1,2,'Parent',fig);
-%         hL(2)  = plot(hAx(2),[1,2],[0 0],'b');hold(hAx(2),'on')
-%         hL(3)  = plot(hAx(2),[1,2],[tolx tolx],'r');
-%         
-%         xlabel(hAx(2),'# iterations')
-%         ylabel(hAx(2),'dVAF')
     end
     
     VAF(iter)  = 1 - SSE./SST;
-%     set(hL(1),'XData',1:iter,'YData',VAF(1:iter));axis(hAx(1),'tight');
-%     title(hAx(1),['iteration: ',num2str(iter)])
     
     if(iter==1)
         dVAF(iter) = VAF(iter);
     else
         dVAF(iter) = VAF(iter)-VAF(iter-1);
     end
-%     set(hL(2),'XData',1:iter,'YData',dVAF(1:iter));
-%     set(hL(3),'XData',[1,iter]);axis(hAx(2),'tight');
-%     
-%     drawnow;
-    %         keyboard
-    
-    
-%     TAKEI NNMF FUNC
-% % %     if(iter>=toln)
-% % %         if(all(dVAF((iter-toln+1):iter)<tolx))
-% % % %             close(fig)
-% % %             break;
-% % %         end
-% % %     elseif(iter==maxiter)
-% % %         disp('*******Iteration reached maxiter before convergence.')
-% % %         break;
-% % %     end
-    
 
-%    MATLAB NNMF FUNC
+    % whether to break iteration and terminate optimization
      if iter>20
         if delta <= 1e-4
-            break; %このfor文(乗法更新)を抜ける
-        %elseif dnorm0-dnorm <= tolx*max(1,dnorm0)
+            break; 
         elseif dVAF(iter) <= tolx
             break;
         elseif iter==maxiter
             break
         end
      end
+
     % Remember previous iteration results
-    dnorm0 = dnorm;
     w0 = w;
     h0 = h;
 end
 VAF = VAF(iter);
 dVAF = dVAF(iter);
-
 
 end
 

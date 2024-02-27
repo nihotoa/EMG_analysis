@@ -1,8 +1,4 @@
 function Y  = getconfig(mfile,name)
-% Y  = getconfig(mfile,name)
-%
-% lastdir = getconfig(mfilename,'lastdir');
-
 try
     workpath    = userpath;
     if(isempty(workpath))

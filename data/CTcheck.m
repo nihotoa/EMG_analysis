@@ -1,151 +1,78 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% coded by Naoki Uchida
-% last modification : 2021.03.23
+%{
+coded by Naoki Uchida
+last modification : 2024. 02.26(by Ohta)
+[function]
+Check cross-talk between EMGs
+(For each trial, find the maximum value between arbitrary EMGs and take their average value.)
+
+[points of improvement(Japanese)]
+筋電にしても3階微分値にしても相互相関関数の絶対値の最大値をとっているがいいのか？
+(その時の位相は保存されていない & 絶対値だったら-1の可能性もある)
+%}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [Yave,Y3ave] = CTcheck(monkeyname,xpdate_num,save_fold,save_CTR)
-% monkeyname = 'Ya' ; 
-% xpdate = '170524'; 
-% Data = S.CTcheck{1,1};
-% dt3 = S.CTcheck{4,1};
-% L = length(Data(:,1));
-switch monkeyname
-    case 'Wa'
-        real_name = 'Wasa';
-    case 'Ya'
-        real_name = 'Yachimun';
-    case 'F'
-        real_name = 'Yachimun';
-    case 'Ma'
-        real_name = 'Matatabi';
-    case 'Sa'
-        real_name = 'Sakiika';
-    case 'Su'
-        real_name = 'Suruku';
-    case 'Se'
-        real_name = 'SesekiL';
-%         real_name = 'SesekiR';
-end
-global task
+function [Yave,Y3ave] = CTcheck(monkeyname, xpdate_num, save_fold, save_CTR, task, real_name)
 xpdate = sprintf('%d',xpdate_num);
- disp(['START TO MAKE & SAVE ' monkeyname xpdate 'CTcheck Data']);
-cd(real_name)
+disp(['START TO MAKE & SAVE ' monkeyname xpdate 'CTcheck Data']);
 
-L = 2;
-for k = 1:L
-    [Data,dt3] = loadCTData(monkeyname,xpdate,save_fold,k);
-    Es = size(Data);
+% get save folder path
+save_fold_path = fullfile(pwd, real_name, save_fold, [monkeyname num2str(xpdate), '_', task]);
+
+% load EMG data & tget trial number
+S = load(fullfile(save_fold_path, [monkeyname xpdate '_CTcheckData.mat']),'CTcheck');
+trial_num = length(S.CTcheck.data0);
+[EMG_num, ~] = size(S.CTcheck.data0{1});
+
+% To speed up processing, set the maximum value of iteration to 20.
+if trial_num > 20
+    trial_num = 20;
+end
+
+for k = 1:trial_num
+    % load each trial data
+    Data = S.CTcheck.data0{:, k};
+    dt3 = S.CTcheck.data3{:, k};
+
+    % make empty array for storing data
     if k == 1
-        L = Es(1);
-        Yave = zeros(L,L);
-        Y3ave = zeros(L,L);
+        Yave = zeros(EMG_num,EMG_num);
+        Y3ave = zeros(EMG_num,EMG_num);
     end
-    %     
-    % Data = S.CTcheck{1,2};
-    % dt3 = S.CTcheck{1,2};
 
-%     L = length(Data(:,1));
+    Y = cell(EMG_num);
+    X = cell(EMG_num);
+    Ysum = zeros(EMG_num,EMG_num);
 
-    Y = cell(L);
-    X = cell(L);
-    Ysum = zeros(L,L);
+    Y3 = cell(EMG_num);
+    X3 = cell(EMG_num);
+    Y3sum = zeros(EMG_num,EMG_num);
 
-    Y3 = cell(L);
-    X3 = cell(L);
-    Y3sum = zeros(L,L);
+    % Find the cross-correlation function between the i-th EMG and the j-th EMG
+    for i = 1:EMG_num
+        for j = 1:EMG_num
+            % Y: cross-correlation function, X: Phase difference between 2 signals
+            [Y{i,j},X{i,j}] = xcorr(Data(i,:) - mean(Data(i,:)), Data(j,:) - mean(Data(j,:)),'coeff');
 
-    count = 0;
-    % f1 = figure;
-    % f2 = figure;
-    for i = 1:L
-        for j = 1:L
-            count = count + 1;
-            %xcorr…相互相関を出す関数(xcorr(a,b)というふうに使う)
-            [Y{i,j},X{i,j}] = xcorr(Data(i,:)-mean(Data(i,:)), Data(j,:)-mean(Data(j,:)),'coeff');
+            % Find the maximum absolute value of the cross-correlation
             Ysum(i,j) = max(abs(Y{i,j}));
-%             Yave = (Yave .* (k-1) + Ysum) ./ k;
-            [Y3{i,j},X3{i,j}] = xcorr(dt3(i,:)-mean(dt3(i,:)), dt3(j,:)-mean(dt3(j,:)),'coeff');
-            Y3sum(i,j) = max(abs(Y3{i,j}));
-%             Y3ave = (Y3ave .* (k-1) + Y3sum) ./ k;
             
-%             [Y{i,j},X{i,j}] = xcorr(Data(i,:),Data(j,:),'coeff');
-%             Ysum(i,j) = max(abs(Y{i,j}));
-%             Yave = (Yave .* (k-1) + Ysum) ./ k;
-%             [Y3{i,j},X3{i,j}] = xcorr(dt3(i,:),dt3(j,:),'coeff');
-%             Y3sum(i,j) = max(abs(Y3{i,j}));
-%             Y3ave = (Y3ave .* (k-1) + Y3sum) ./ k;
+            % Find the cross-correlation function of the 3rd-order differential value
+            [Y3{i,j},X3{i,j}] = xcorr(dt3(i,:)-mean(dt3(i,:)), dt3(j,:)-mean(dt3(j,:)),'coeff');
 
-    %         figure(f1)
-    %         subplot(L,L,count);
-    %         plot(X{i,j},Y{i,j});
-    %         ylim([-1 1]);
-    %         figure(f2)
-    %         subplot(L,L,count);
-    %         plot(X{i,j},Y{i,j});
-    %         ylim([-1 1]);
+            % Find the maximum absolute value of the cross-correlation
+            Y3sum(i,j) = max(abs(Y3{i,j}));
         end
     end
+
+    % Calculate trial_average
     Yave = (Yave .* (k-1) + Ysum) ./ k;
     Y3ave = (Y3ave .* (k-1) + Y3sum) ./ k;
 end
 
-cd([save_fold '/' monkeyname xpdate '_' task])
+% save data
 if save_CTR
-    switch monkeyname
-         case 'Wa'
-             save([monkeyname xpdate '_CTR.mat'], 'monkeyname', 'xpdate', 'Yave', 'Y3ave');
-         case 'Ya'
-             save([monkeyname xpdate '_CTR.mat'], 'monkeyname', 'xpdate', 'Yave', 'Y3ave');
-         case 'F'
-             save([monkeyname xpdate '_CTR.mat'], 'monkeyname', 'xpdate', 'Yave', 'Y3ave');
-     end
+    save(fullfile(save_fold_path, [monkeyname xpdate '_CTR.mat']), 'monkeyname', 'xpdate', 'Yave', 'Y3ave');
 end
-cd ../../../
 
-% f3 = figure;
-% hold on
-% colormap 'jet'
-% image(Yave,'CDataMapping','scaled')
-% for i = 1:L
-%     for j = 1:L
-%         if Yave(i,j)>=0.25
-%             plot([i i],[j j],'kx','LineWidth',2,'MarkerSize',10,'MarkerEdgeColor','k')
-%         end
-%     end
-% end
-% % xticklabels(f4,S.EMGs);
-% xlim([0.5 L+0.5]);
-% ylim([0.5 L+0.5]);
-% colorbar
-% caxis([0 1])
-% 
-% f4 = figure;
-% hold on
-% colormap 'jet'
-% image(Y3ave,'CDataMapping','scaled')
-% for i = 1:L
-%     for j = 1:L
-%         if Y3ave(i,j)>=0.25
-%             plot([i i],[j j],'kx','LineWidth',2,'MarkerSize',10,'MarkerEdgeColor','k')
-%         end
-%     end
-% end
-% % xticklabels(f4,S.EMGs);
-% xlim([0.5 L+0.5]);
-% ylim([0.5 L+0.5]);
-% colorbar
-% caxis([0 1])
-% hold off
-
-close all
-
- disp(['FINISH TO MAKE & SAVE ' monkeyname xpdate 'CTcheck Data']);
-end
-%---------------------------------------------------------------------
-function [D0,D3] = loadCTData(monkeyname,xpdate,save_fold,N)
-global task
-cd([save_fold '/' monkeyname xpdate '_' task])
-    S = load([monkeyname xpdate '_CTcheckData.mat'],'CTcheck');
-cd ../../
-D0 = S.CTcheck.data0{:,N};
-D3 = S.CTcheck.data3{:,N};
+disp(['FINISH TO MAKE & SAVE ' monkeyname xpdate 'CTcheck Data']);
 end

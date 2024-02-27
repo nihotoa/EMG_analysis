@@ -4,8 +4,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear 
 %% RUNNING DATA LIST
-realname = 'SesekiR';
-global task;
+realname = 'Yachimun'; % name of monkey folder
+% global task;
 task = 'standard';
 save_fold = 'easyData';
 Allfiles_S = uigetfile('*.mat',...
