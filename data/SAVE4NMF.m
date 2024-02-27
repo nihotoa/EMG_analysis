@@ -17,13 +17,19 @@ pre:SaveFileInfo
 post:filterBat_SynNMFPre.m
 
 [Improvement points(Japanaese)]
-ファイルを連結する時に, 連番じゃ無いものは対応していないことを念頭に置いておく
+・ファイルを連結する時に, 連番じゃ無いものは対応していないことを念頭に置いておく
 (例)file 002, file004が使用するファイルだった時にはエラー吐く(002, 003, 004をloadしようとするから)
+・最初のファイル選択の部分で, 最初からフォルダにいるように変更する + dispの文章を変える
+・インナー関数で階層移動しているのがめんどくさいので, 書き換える
+
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+clear;
+
 %% set param
 real_name = 'Yachimun'; % Name of the directory containing the data you want to analyze
 task = 'standard'; % you don't need to change this parameter
+
 % parameters used in local function(MakeData4nmf)
 param_struct = struct();
 param_struct.save_fold = 'new_nmf_result';
@@ -31,6 +37,7 @@ param_struct.downsample = 1; % whether you want to perform down sampling(1 or 0)
 param_struct.downdata_to =5000; % Sampling frequency after down sapling
 param_struct.make_EMG = 1; % whether you want to make EMG data(1 or 0)
 param_struct.save_EMG = 1; % whether you want to save EMG data(1 or 0)
+
 % as for ECoG analysis
 param_struct.save_fold_ECoG = 'ECoGData';
 param_struct.make_ECoG = 0; % whether you want to make ECoG data(1 or 0)
@@ -63,7 +70,7 @@ end
 %% define local function
 
 % [role of this function] catenate experiment data and save each EMG as individual file
-function [output_args] = MakeData4nmf(monkeyname, real_name, xpdate, file_num, task, param_struct)
+function [] = MakeData4nmf(monkeyname, real_name, xpdate, file_num, task, param_struct)
 % Make EMG set(define muscle names for each electrode)
 switch real_name
     case 'Wasa'

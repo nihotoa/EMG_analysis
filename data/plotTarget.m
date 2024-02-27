@@ -33,31 +33,32 @@ pre初日のシナジーと,post初日のシナジーの入れ替えを自動で行う様に設定する(dispNMF
 clear
 %% set param
 
-%Pall(Lever1 on) : Averaged dataset on each session -50:150%(triggered at hold_on1)
-%Ptrig1(Lever1 off) : Averaged dataset on each session -50:50%(triggered at hold_off1)
-%Ptrig2 : Averaged dataset on each session -50:50%(triggered at hold_on2)
-%Ptrig3 : Averaged dataset on each session -25:105%(triggered at hold_on1)
+% Pall(Lever1 on) : Averaged dataset on each session -50:150%(triggered at hold_on1)
+% Ptrig1(Lever1 off) : Averaged dataset on each session -50:50%(triggered at hold_off1)
+% Ptrig2 : Averaged dataset on each session -50:50%(triggered at hold_on2)
+% Ptrig3 : Averaged dataset on each session -25:105%(triggered at hold_on1)
 
-realname = 'SesekiL'; %monkey name 'Yachimun'/'SesekiL'/'Wasa'
-monkeyname = 'Se'; %prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa' 
+realname = 'Yachimun'; % monkey name 'Yachimun'/'SesekiL'/'Wasa'
+monkeyname = 'F'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa' 
 Tar = 'EMG';  % the data which you want to plot -> 'EMG' or 'Synergy'
-save_fold = 'easyData';     % you don't need to change
-plot_fig = 1;               % wtherer you want to plot figures
-pColor = 'K';               %select 'K'(black plot) or 'C'(color plot) 【recommend!!】pre-analysis:'K' post-analysis:'C'
-save_data = 0;              %save cut data for calculating cross-correlation(each session)
-save_end_control = 0;       %save cut data for calculating cross-correlation(Pre Data as a control data)
-fontS = 5; % 10;            %font size in figures 
-LineW = 1.5; %0.1;          %width of plot line 
-CTC = 0;                    %plot Cross Talk(I don't confirm whether I can use this) 
-nomalizeAmp = 0;            %normalize Amplitude 
-YL = Inf;                   %(if nomalize Amp == 0) ylim of graph
-save_xcorr_data = 0;        %save data to use of plot x_corr
+plot_fig = 1;  % wtherer you want to plot figures
+pColor = 'K';  % select 'K'(black plot) or 'C'(color plot) 【recommend!!】pre-analysis:'K' post-analysis:'C'
+save_data = 0; % save cut data for calculating cross-correlation(each session)
+save_end_control = 0;       % save cut data for calculating cross-correlation(Pre Data as a control data)
+fontS = 5; % 10;            % font size in figures 
+LineW = 1.5; %0.1;          % width of plot line 
+CTC = 0;                    % plot Cross Talk(I don't confirm whether I can use this) 
+nomalizeAmp = 0;            % normalize Amplitude 
+YL = Inf;                   % (if nomalize Amp == 0) ylim of graph
+save_xcorr_data = 0;        % save data to use of plot x_corr
 plot_max_EMG_value = 0; % if you want to save each days & each muscles max EMG value
-nmf_fold_name = 'nmf_result'; %(if you want to plot synergy data) folder name of nmf_fold
-plot_figure_type = 'forHara';  %'default' / 'forHara' プロットするfigureのタイプ.default:フツーのやつ.forHara:一つのタイミングのsubplotに全ての筋肉(pColor='K'の時にしか設定していない)
-eliminate_muscles = 0; %(if plot_figure_type=='forHara' & monkeyname== 'Se') if you want to ignore some muscles which is broken in post-section when you plot figures. 
-synergy_order = [3,1,4,2];  %(pre1,2,3,4)に対応するpostのsynergy(Yachimun:[4,2,1,3], Seseki:[3,1,4,2])
+nmf_fold_name = 'new_nmf_result';  % (if you want to plot synergy data) folder name of nmf_fold
+plot_figure_type = 'default';  % 'default' / 'forHara' プロットするfigureのタイプ.default:フツーのやつ.forHara:一つのタイミングのsubplotに全ての筋肉(pColor='K'の時にしか設定していない)
+eliminate_muscles = 0;  % (if plot_figure_type=='forHara' & monkeyname== 'Se') if you want to ignore some muscles which is broken in post-section when you plot figures. 
+synergy_order = [3,1,4,2];  % (pre1,2,3,4)に対応するpostのsynergy(Yachimun:[4,2,1,3], Seseki:[3,1,4,2])
 %% code section
+
+save_fold = 'easyData';     % you don't need to change
 switch monkeyname
    case 'F'
       PreDays = [170516, 170517, 170524, 170526];
@@ -266,14 +267,6 @@ switch Tar
         cd easyData/P-DATA
 end
 
-% switch Tar
-%     case 'EMG'
-%         load(Allfiles_S{1},'EMGs','taskRange');
-%     case 'Synergy'
-%         cd ../../
-%         load(['nmf_result/synData/' Allfiles_S{1}],'taskRange');
-%         cd easyData/P-DATA
-% end
 
 switch pColor
    case 'C'

@@ -64,14 +64,19 @@ for jj=1:length(InputDirs)  % each day
          for kk =1:length(Tarfiles)
              Tar = loaddata(fullfile(ParentDir,InputDir,Tarfiles{kk}));
               OutputDir   = fullfile(ParentDir,InputDir);
+
              %highpass filtering
              Tar = makeContinuousChannel([Tar.Name,'-hp50Hz'],'butter',Tar,'high',6,50,'both');
+
              %full wave rectification
              Tar = makeContinuousChannel([Tar.Name,'-rect'],'rectify',Tar);
+
              %lowpass filtering
              Tar = makeContinuousChannel([Tar.Name,'-lp20Hz'], 'butter', Tar, 'low',6,20,'both');
+
              %down sampling at 100Hz
              Tar = makeContinuousChannel([Tar.Name,'-ds100Hz'], 'resample', Tar, 100,0);
+             
              % save data
              save(fullfile(OutputDir,[Tar.Name,'.mat']),'-struct','Tar');
              disp(fullfile(OutputDir,Tar.Name));     

@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
 [your operation]
 1. Go to the directory named monkey name (ex.) if you want to analyze Yachimun's data, please go to 'EMG_analysis/data/Yachimun'
@@ -20,12 +20,11 @@ post : makefold.m
 
 Eanother monkey
 pre:fitlerBat_SynNMFPre.m
-post: (MoveFIle.m) -> SYNERGYPLOT
+post: SYNERGYPLOT.m
 
 [Improvement points(Japanaese)]
-‚ ‚Æ‚ÍmakeEMGNMF‚Ì’†g‚ğ’²‚×‚é
 %}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function makeEMGNMF_btcOya(TimeRange,kf,nrep,nshuffle,alg)
 % setting parameters

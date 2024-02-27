@@ -33,6 +33,11 @@ save_data
 barのところ(要改善)
 WDaySynergyの代入するところ(要改善)
 シナジーの対応づけがpreとpostでうまくいっていない
+
+[Improvement points(Japanaese)]
+日本語部分をなくす
+冒頭のexperimentをあれする
+
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear

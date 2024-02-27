@@ -12,36 +12,49 @@ location: Directory youhave chosen as save folder (A dialog box will pop up duri
 file name: 
 
 [procedure]
-pre: (change_name.m) or makeEMGNMF_oya.m
-post: dispNMF_W (path: EMG_analysis/data/Yachimun/new_nmf_result/dispNMF_W.m)
+pre: makeEMGNMF_btcOya.m
+post: dispNMF_W (path:
+EMG_analysis/data/Yachimun/new_nmf_result/dispNMF_W.m), (This file is not yet fully described)
 
+[caution!!]
+In order to complete this function, in addtion to the analysis flow of synergy analysis, it is necessary to finish the flow up to runningEasyfunc.m of EMG analysis
 
 [Improvement points(Japanaese)]
-%めちゃめちゃ冗長
-階層移りすぎ,変える必要のあるパラメータが，中で使う関数に散らばりすぎ．
-ロードする変数が指定されていない．筋肉名や筋肉の数を自分で指定する必要がある
-具体的な変更点:
-emg_groupを定義しないで, loadしたシナジーの情報から定義するように変更する
+注意点: タイミングデータの取得のために, EMG_analysisのフローをrunnningEasyfuncまで行う必要がある
+disp_NMFの説明が十分じゃないことを, procedureの中で書いているので, 編集したらその部分を消す
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+clear;
 %% set param
 monkeyname = 'F'; % initials that each monkey has uniquery
-emg_group = 4;
-plk = 3; % how to save data (don't need to change)
-synergy_num_list = [3, 4]; % which synergy number of synergies to plot
+synergy_num_list = [4]; % which synergy number of synergies to plot
 type = '_filtNO5';% _filt5 means'both' direction filtering used 'filtfilt' function (don't need to change)
+nmf_fold_name = 'new_nmf_result';
+each_plot = 0; % whether you want to plot spatial_pattern figure for each synergy
+
+% save_setting
+save_setting.save_fig_W = 1; % whether you want to save synergy
+save_setting.save_fig_H = 1;
+save_setting.save_fig_r2 = 1; 
+save_setting.save_data = 1;
 
      
 %% code section
 % get the list of day
 disp('Please select all date folder you want to analyze')
-InputDirs   = uiselect(dirdir(fullfile(pwd, 'new_nmf_result')),1,'??????????Experiments???I??????????????');
+InputDirs   = uiselect(dirdir(fullfile(pwd, 'new_nmf_result')), 1, 'Please select all date folder you want to analyze');
 days = get_days(InputDirs);
 
+% loop for each experimental day
 for ii = 1:length(days)
     fold_name = [monkeyname sprintf('%d',days(ii))];
-    synergyplot_func(fold_name, emg_group, plk, synergy_num_list);
+
+    % loop for each number of synergies 
+    for jj = 1:length(synergy_num_list)
+        synergy_num = synergy_num_list(jj);
+        plotSynergyAll_uchida(fold_name, synergy_num, nmf_fold_name, each_plot, save_setting);
+    end
+    close all
 end
 
 %% set local function
@@ -50,6 +63,7 @@ function [days] = get_days(InputDirs)
 explanation of this func:
 Extract the numerical part from each element of InputDirs(cell array) and create a list of double array
 %}
+
 days = zeros(length(InputDirs), 1);
 for ii = 1:length(InputDirs)
     ref_element = InputDirs{ii};
