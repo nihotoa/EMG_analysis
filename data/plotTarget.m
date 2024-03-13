@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %{
 %coded by Naoki Uchida
-% last modification : 2023.2.6(by Ohta)
+% last modification : 2024.2.6(by Ohta)
 
 [Your operation]
 1. Please complete the steps up to pre-procedure (refer to below ([procedure]))
@@ -24,10 +24,13 @@ post : calcXcorr.m(if you want to calculate & plot Xcorr) 【place】: /Volumes/Un
        or testWplot_tf.m file (to confirm whether there are no difference between pre and post synergy_W, location: EMG_analysis/synergyData)
 (+a):When you want to check the H_synergy of each synergy cut out at each timing at once, use plotSynergy.m (contained in 'data' fold).
 [改善点]
-plotに使ったEMGデータ(Pall, Ptrig1...)がどこに保存されるのかをinformationとして書く
-このデータは,normalizeされる場合とされない場合で区別されないで保存されている -> 名前で区別して保存する
-シナジーのHはeasyData -> Pdata -> フォルダ名の中に保存されることを書く
-pre初日のシナジーと,post初日のシナジーの入れ替えを自動で行う様に設定する(dispNMF_Wの方でも同様に)
+・cdで階層移動するのを止める
+・日本語部分を無くす
+・README.mdのフォーマットに従ってドキュメンテーションを書く
+・plotに使ったEMGデータ(Pall, Ptrig1...)がどこに保存されるのかをinformationとして書く
+・このデータは,normalizeされる場合とされない場合で区別されないで保存されている -> 名前で区別して保存する
+・シナジーのHはeasyData -> Pdata -> フォルダ名の中に保存されることを書く
+・pre初日のシナジーと,post初日のシナジーの入れ替えを自動で行う様に設定する(dispNMF_Wの方でも同様に)
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear
@@ -40,17 +43,17 @@ clear
 
 realname = 'Yachimun'; % monkey name 'Yachimun'/'SesekiL'/'Wasa'
 monkeyname = 'F'; % prefix of Raw data(ex) 'Se'/'Ya'/'F'/'Wa' 
-Tar = 'EMG';  % the data which you want to plot -> 'EMG' or 'Synergy'
+Tar = 'Synergy';  % the data which you want to plot -> 'EMG' or 'Synergy'
 plot_fig = 1;  % wtherer you want to plot figures
 pColor = 'K';  % select 'K'(black plot) or 'C'(color plot) 【recommend!!】pre-analysis:'K' post-analysis:'C'
 save_data = 0; % save cut data for calculating cross-correlation(each session)
-save_end_control = 0;       % save cut data for calculating cross-correlation(Pre Data as a control data)
-fontS = 5; % 10;            % font size in figures 
-LineW = 1.5; %0.1;          % width of plot line 
-CTC = 0;                    % plot Cross Talk(I don't confirm whether I can use this) 
-nomalizeAmp = 0;            % normalize Amplitude 
-YL = Inf;                   % (if nomalize Amp == 0) ylim of graph
-save_xcorr_data = 0;        % save data to use of plot x_corr
+save_end_control = 0; % save cut data for calculating cross-correlation(Pre Data as a control data)
+fontS = 5; % 10; % font size in figures 
+LineW = 1.5; %0.1; % width of plot line 
+CTC = 0; % plot Cross Talk(I don't confirm whether I can use this) 
+nomalizeAmp = 0; % normalize Amplitude 
+YL = Inf; % (if nomalize Amp == 0) ylim of graph
+save_xcorr_data = 0; % save data to use of plot x_corr
 plot_max_EMG_value = 0; % if you want to save each days & each muscles max EMG value
 nmf_fold_name = 'new_nmf_result';  % (if you want to plot synergy data) folder name of nmf_fold
 plot_figure_type = 'default';  % 'default' / 'forHara' プロットするfigureのタイプ.default:フツーのやつ.forHara:一つのタイミングのsubplotに全ての筋肉(pColor='K'の時にしか設定していない)
